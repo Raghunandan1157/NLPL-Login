@@ -301,6 +301,10 @@
 
     setTimeout(function () {
       successOverlay.classList.add('show');
+      // Redirect to dashboard after success animation
+      setTimeout(function () {
+        window.location.href = 'dashboard.html';
+      }, 1500);
     }, 300);
   });
 })();
