@@ -35,17 +35,38 @@
           <line x1="12" y1="3" x2="12" y2="15"/>
         </svg>
       </div>
-      <h2 class="upload-title">Upload Report</h2>
-      <p class="upload-subtitle">Daily Collection Report (.xlsx or .xlsm)</p>
-      <button class="upload-btn" id="uploadBtn">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-        Choose File
-      </button>
-      <input type="file" id="fileInput" accept=".xlsx,.xlsm" hidden>
+      <h2 class="upload-title">Upload Reports</h2>
+      <p class="upload-subtitle">Upload your collection reports to get started</p>
+      <div class="upload-slots">
+        <div class="upload-slot">
+          <div class="upload-slot-label">Daily Collection Report</div>
+          <div class="upload-slot-hint">Processed summary — .xlsx or .xlsm</div>
+          <button class="upload-btn" id="uploadBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Choose File
+          </button>
+          <input type="file" id="fileInput" accept=".xlsx,.xlsm" hidden>
+          <div class="upload-slot-status" id="processedStatus"></div>
+        </div>
+        <div class="upload-slot upload-slot-optional">
+          <div class="upload-slot-label">Raw Data for Drill-Down</div>
+          <div class="upload-slot-hint">Regular Demand Vs Collection — .xlsx</div>
+          <button class="upload-btn upload-btn-outline" id="uploadRawBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Choose File
+          </button>
+          <input type="file" id="rawFileInput" accept=".xlsx" hidden>
+          <div class="upload-slot-status" id="rawStatus"></div>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -57,7 +78,15 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0E8B7D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         <span class="file-name" id="fileName"></span>
       </div>
-      <button class="change-file-btn" id="uploadNewBtn">Change</button>
+      <div class="file-info-right">
+        <button class="raw-upload-btn" id="rawUploadDashBtn" title="Upload raw data for field officer drill-down">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Raw Data
+        </button>
+        <input type="file" id="rawDashInput" accept=".xlsx" hidden>
+        <span class="raw-dash-status" id="rawDashStatus"></span>
+        <button class="change-file-btn" id="uploadNewBtn">Change</button>
+      </div>
     </div>
 
     <!-- Sheet tabs -->
@@ -65,6 +94,9 @@
 
     <!-- Section tabs -->
     <nav class="section-tabs" id="sectionTabs"></nav>
+
+    <!-- Drill-down breadcrumb -->
+    <div class="drilldown-breadcrumb" id="drilldownBreadcrumb" style="display:none"></div>
 
     <!-- View toggle -->
     <div class="view-bar">

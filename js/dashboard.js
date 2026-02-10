@@ -22,7 +22,11 @@
     viewMode: 'table',
     tableCoords: null,          // loaded from table_coordinates.json
     branchRankFilter: null,     // null, 'top10', 'bottom10'
-    branchCategoryFilter: null  // null, 'regular', 'dpd1', 'dpd2', 'pnpa'
+    branchCategoryFilter: null, // null, 'regular', 'dpd1', 'dpd2', 'pnpa'
+    rawData: null,              // drill-down data from server
+    drillView: null,            // null | 'officers' | 'accounts'
+    drillBranch: null,          // branch key in rawData
+    drillOfficer: null          // officer name in rawData
   };
 
   // --- Load table_coordinates.json (best-effort, non-blocking) ---
@@ -61,6 +65,16 @@
   var dataContainer = document.getElementById('dataContainer');
   var loadingOverlay = document.getElementById('loadingOverlay');
   var errorToast = document.getElementById('errorToast');
+
+  // Drill-down / raw data DOM refs
+  var rawFileInput = document.getElementById('rawFileInput');
+  var uploadRawBtn = document.getElementById('uploadRawBtn');
+  var processedStatus = document.getElementById('processedStatus');
+  var rawStatusEl = document.getElementById('rawStatus');
+  var drilldownBreadcrumb = document.getElementById('drilldownBreadcrumb');
+  var rawUploadDashBtn = document.getElementById('rawUploadDashBtn');
+  var rawDashInput = document.getElementById('rawDashInput');
+  var rawDashStatus = document.getElementById('rawDashStatus');
 
   // --- Init header ---
   userName.textContent = empName;
@@ -175,7 +189,7 @@
     window.location.href = 'index.html';
   });
 
-  // --- File upload ---
+  // --- File upload (processed report) ---
   uploadBtn.addEventListener('click', function () { fileInput.click(); });
   uploadNewBtn.addEventListener('click', function () { fileInput.click(); });
 
@@ -234,6 +248,92 @@
     reader.readAsArrayBuffer(file);
   }
 
+  // --- Raw data file upload ---
+  if (uploadRawBtn) {
+    uploadRawBtn.addEventListener('click', function () { rawFileInput.click(); });
+  }
+  if (rawFileInput) {
+    rawFileInput.addEventListener('change', function () {
+      if (this.files.length > 0) handleRawFile(this.files[0]);
+      this.value = '';
+    });
+  }
+  if (rawUploadDashBtn) {
+    rawUploadDashBtn.addEventListener('click', function () { rawDashInput.click(); });
+  }
+  if (rawDashInput) {
+    rawDashInput.addEventListener('change', function () {
+      if (this.files.length > 0) handleRawFile(this.files[0]);
+      this.value = '';
+    });
+  }
+
+  function handleRawFile(file) {
+    if (!file) return;
+    var ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    if (ext !== '.xlsx') {
+      showError('Raw data file must be .xlsx');
+      return;
+    }
+
+    updateRawStatusUI('uploading', file.name);
+
+    var formData = new FormData();
+    formData.append('file', file);
+
+    fetch('/api/upload-raw', {
+      method: 'POST',
+      body: formData
+    })
+    .then(function (res) {
+      if (!res.ok) throw new Error('Server returned ' + res.status);
+      return res.json();
+    })
+    .then(function (data) {
+      if (data.status === 'ok') {
+        state.rawData = data;
+        updateRawStatusUI('ready', null);
+        console.log('[dashboard] Raw data loaded:', data.meta);
+        // Re-render if on branch view to make names clickable
+        if (state.parsedData && state.activeSection === 'branch' && !state.drillView) {
+          renderData();
+        }
+      } else {
+        updateRawStatusUI('error', null);
+        showError(data.message || 'Failed to process raw data');
+      }
+    })
+    .catch(function (err) {
+      updateRawStatusUI('error', null);
+      showError('Raw data upload failed. The file may be too large or the server timed out.');
+      console.error('Raw upload error:', err);
+    });
+  }
+
+  function updateRawStatusUI(status, fileName) {
+    var texts = {
+      uploading: 'Processing' + (fileName ? ' ' + fileName.substring(0, 20) : '') + '...',
+      ready: 'Drill-down ready',
+      error: 'Upload failed'
+    };
+    var text = texts[status] || '';
+
+    if (rawStatusEl) {
+      rawStatusEl.textContent = text;
+      rawStatusEl.className = 'upload-slot-status ' + status;
+    }
+    if (rawDashStatus) {
+      rawDashStatus.textContent = text;
+      rawDashStatus.className = 'raw-dash-status ' + status;
+    }
+    if (status === 'ready' && rawUploadDashBtn) {
+      rawUploadDashBtn.classList.add('raw-ready');
+    }
+    if (status !== 'ready' && rawUploadDashBtn) {
+      rawUploadDashBtn.classList.remove('raw-ready');
+    }
+  }
+
   // --- Switch to dashboard view ---
   function showDashboard() {
     uploadState.style.display = 'none';
@@ -247,6 +347,11 @@
     dashboardState.style.display = 'none';
     uploadState.style.display = 'block';
     state.parsedData = null;
+    state.rawData = null;
+    state.drillView = null;
+    state.drillBranch = null;
+    state.drillOfficer = null;
+    updateRawStatusUI('', null);
   }
 
   // --- Sheet tabs ---
@@ -271,6 +376,9 @@
     state.activeSheet = key;
     state.branchRankFilter = null;
     state.branchCategoryFilter = null;
+    state.drillView = null;
+    state.drillBranch = null;
+    state.drillOfficer = null;
     renderSheetTabs();
     renderSectionTabs();
     renderData();
@@ -298,6 +406,9 @@
     state.activeSection = key;
     state.branchRankFilter = null;
     state.branchCategoryFilter = null;
+    state.drillView = null;
+    state.drillBranch = null;
+    state.drillOfficer = null;
     var cancelBar = document.getElementById('filterCancelBar');
     if (cancelBar) cancelBar.classList.remove('visible');
     renderSectionTabs();
@@ -318,9 +429,86 @@
     renderData();
   });
 
+  // --- Drill-down helpers ---
+  function findRawBranch(name) {
+    if (!state.rawData || !state.rawData.branches) return null;
+    var branches = state.rawData.branches;
+    if (branches[name]) return name;
+    var upper = name.toUpperCase().trim();
+    for (var key in branches) {
+      if (branches.hasOwnProperty(key) && key.toUpperCase().trim() === upper) {
+        return key;
+      }
+    }
+    return null;
+  }
+
+  function enterBranchDrilldown(branchKey) {
+    state.drillView = 'officers';
+    state.drillBranch = branchKey;
+    state.drillOfficer = null;
+    renderData();
+  }
+
+  function enterOfficerDrilldown(officerName) {
+    state.drillView = 'accounts';
+    state.drillOfficer = officerName;
+    renderData();
+  }
+
+  function drilldownBack() {
+    if (state.drillView === 'accounts') {
+      state.drillView = 'officers';
+      state.drillOfficer = null;
+    } else {
+      state.drillView = null;
+      state.drillBranch = null;
+      state.drillOfficer = null;
+    }
+    renderData();
+  }
+
+  function showDrilldownUI() {
+    sheetTabs.style.display = 'none';
+    sectionTabs.style.display = 'none';
+    var viewBar = document.querySelector('.view-bar');
+    if (viewBar) viewBar.style.display = 'none';
+    reportTitle.style.display = 'none';
+    var fp = document.getElementById('branchFilterPanel');
+    if (fp) fp.classList.remove('visible');
+    dashboardState.classList.remove('has-filter');
+    var cb = document.getElementById('filterCancelBar');
+    if (cb) cb.classList.remove('visible');
+    drilldownBreadcrumb.style.display = 'flex';
+  }
+
+  function hideDrilldownUI() {
+    sheetTabs.style.display = '';
+    sectionTabs.style.display = '';
+    var viewBar = document.querySelector('.view-bar');
+    if (viewBar) viewBar.style.display = '';
+    reportTitle.style.display = '';
+    drilldownBreadcrumb.style.display = 'none';
+  }
+
   // --- Render data ---
   function renderData() {
     if (!state.parsedData) return;
+
+    // Drill-down mode
+    if (state.drillView) {
+      showDrilldownUI();
+      if (state.drillView === 'officers') {
+        renderOfficerTable();
+      } else if (state.drillView === 'accounts') {
+        renderAccountTable();
+      }
+      return;
+    }
+
+    // Normal mode
+    hideDrilldownUI();
+
     var sheetData = state.parsedData.sheets[state.activeSheet];
     if (!sheetData) return;
     var section = sheetData.sections[state.activeSection];
@@ -482,6 +670,7 @@
     var cat = FILTER_CATEGORIES[category];
     if (!cat) return;
 
+    var isBranch = state.rawData != null;
     var headerRow, bodyHtml = '';
 
     if (cat.type === 'demand') {
@@ -490,8 +679,13 @@
       for (var i = 0; i < rows.length; i++) {
         var r = rows[i].row;
         var data = r[cat.dataKey];
+        var nameContent = esc(r.name);
+        if (isBranch) {
+          var rawKey = findRawBranch(r.name);
+          if (rawKey) nameContent = '<a class="branch-link" data-branch="' + esc(rawKey) + '">' + esc(r.name) + '</a>';
+        }
         bodyHtml += '<tr class="row-slide-in">' +
-          '<td class="col-name">' + esc(r.name) + '</td>' +
+          '<td class="col-name">' + nameContent + '</td>' +
           '<td class="col-demand">' + formatNum(data.demand) + '</td>' +
           '<td class="col-demand">' + formatNum(data.activationAcct) + '</td>' +
           '<td class="col-demand">' + formatNum(data.activationAmt) + '</td>' +
@@ -505,8 +699,13 @@
       for (var i = 0; i < rows.length; i++) {
         var r = rows[i].row;
         var data = r[cat.dataKey];
+        var nameContent = esc(r.name);
+        if (isBranch) {
+          var rawKey = findRawBranch(r.name);
+          if (rawKey) nameContent = '<a class="branch-link" data-branch="' + esc(rawKey) + '">' + esc(r.name) + '</a>';
+        }
         bodyHtml += '<tr class="row-slide-in">' +
-          '<td class="col-name">' + esc(r.name) + '</td>' +
+          '<td class="col-name">' + nameContent + '</td>' +
           '<td class="col-demand">' + formatNum(data.demand) + '</td>' +
           '<td class="col-collection">' + formatNum(data.collection) + '</td>' +
           '<td class="col-pct ' + pctClass(data.collectionPct) + '">' + formatPct(data.collectionPct) + '</td>' +
@@ -605,6 +804,8 @@
   }
 
   function renderTableFull(section) {
+    var isBranch = state.activeSection === 'branch' && state.rawData != null;
+
     var groups = [
       { label: 'Regular Demand', cls: 'group-regular', cols: ['Demand', 'Coll.', 'FTOD', 'Coll%'] },
       { label: '1-30 DPD', cls: 'group-dpd1', cols: ['Demand', 'Coll.', 'Bal.', 'Coll%'] },
@@ -643,7 +844,14 @@
 
     function rowToTds(r, isTotal) {
       var cls = isTotal ? ' class="total-row"' : '';
-      var html = '<tr' + cls + '><td class="col-name">' + esc(r.name) + '</td>';
+      var nameContent = esc(r.name);
+      if (!isTotal && isBranch) {
+        var rawKey = findRawBranch(r.name);
+        if (rawKey) {
+          nameContent = '<a class="branch-link" data-branch="' + esc(rawKey) + '">' + esc(r.name) + '</a>';
+        }
+      }
+      var html = '<tr' + cls + '><td class="col-name">' + nameContent + '</td>';
       // Regular
       html += '<td class="col-demand">' + formatNum(r.regularDemand.demand) + '</td>';
       html += '<td class="col-collection">' + formatNum(r.regularDemand.collection) + '</td>';
@@ -759,5 +967,195 @@
       headerRow +
       '</thead><tbody>' + bodyHtml + '</tbody></table></div>';
   }
+
+  // --- Drill-down renderers ---
+  function renderOfficerTable() {
+    var branchData = state.rawData.branches[state.drillBranch];
+    if (!branchData) {
+      grandTotalCard.innerHTML = '';
+      dataContainer.innerHTML = '<div class="empty-section"><p>No data found for this branch</p></div>';
+      return;
+    }
+
+    // Breadcrumb
+    drilldownBreadcrumb.innerHTML =
+      '<button class="drilldown-back-btn">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>' +
+        ' Back to Branch Table' +
+      '</button>' +
+      '<div class="drilldown-context">Branch: ' + esc(state.drillBranch) + '</div>';
+
+    // Branch totals summary
+    var t = branchData.totals;
+    var pc = pctClass(t.collection_pct);
+    grandTotalCard.innerHTML =
+      '<div class="total-card">' +
+        '<div class="total-card-label">' + esc(state.drillBranch) + ' \u2014 Summary</div>' +
+        '<div class="simple-metric-grid" style="grid-template-columns:repeat(5,1fr)">' +
+          '<div class="simple-metric-box"><div class="simple-metric-label">Accounts</div><div class="simple-metric-value">' + formatNum(t.accounts) + '</div></div>' +
+          '<div class="simple-metric-box"><div class="simple-metric-label">Demand</div><div class="simple-metric-value">' + formatNum(t.regular_demand) + '</div></div>' +
+          '<div class="simple-metric-box"><div class="simple-metric-label">Collection</div><div class="simple-metric-value">' + formatNum(t.collection) + '</div></div>' +
+          '<div class="simple-metric-box"><div class="simple-metric-label">Coll%</div><div class="simple-metric-value ' + pc + '">' + t.collection_pct + '%</div></div>' +
+          '<div class="simple-metric-box"><div class="simple-metric-label">Officers</div><div class="simple-metric-value">' + Object.keys(branchData.officers).length + '</div></div>' +
+        '</div>' +
+      '</div>';
+
+    // Officer table
+    var officers = branchData.officers;
+    var officerNames = Object.keys(officers);
+
+    // Sort by collection% descending
+    officerNames.sort(function (a, b) {
+      return (officers[b].totals.collection_pct || 0) - (officers[a].totals.collection_pct || 0);
+    });
+
+    // Check if account detail is available
+    var hasAccounts = officerNames.length > 0 && officers[officerNames[0]] && officers[officerNames[0]].accounts != null;
+
+    var headerRow = '<tr>' +
+      '<th class="col-name">Officer Name</th>' +
+      '<th>Emp ID</th>' +
+      '<th>Accounts</th>' +
+      '<th class="col-demand">Demand</th>' +
+      '<th class="col-collection">Collection</th>' +
+      '<th class="col-pct">Coll%</th>' +
+      '<th>0 Days</th><th>1-30</th><th>31-60</th><th>61-90</th><th>90+</th>' +
+    '</tr>';
+
+    var bodyHtml = '';
+    for (var i = 0; i < officerNames.length; i++) {
+      var name = officerNames[i];
+      var off = officers[name];
+      var ot = off.totals;
+      var opc = pctClass(ot.collection_pct);
+      var nameCell;
+      if (hasAccounts) {
+        nameCell = '<a class="officer-link" data-officer="' + esc(name) + '">' + esc(name) + '</a>';
+      } else {
+        nameCell = esc(name);
+      }
+      bodyHtml += '<tr class="row-slide-in">' +
+        '<td class="col-name">' + nameCell + '</td>' +
+        '<td>' + esc(off.officer_id) + '</td>' +
+        '<td>' + formatNum(ot.accounts) + '</td>' +
+        '<td class="col-demand">' + formatNum(ot.regular_demand) + '</td>' +
+        '<td class="col-collection">' + formatNum(ot.collection) + '</td>' +
+        '<td class="col-pct ' + opc + '">' + ot.collection_pct + '%</td>' +
+        '<td>' + formatNum(ot.dpd_breakdown['0_days']) + '</td>' +
+        '<td>' + formatNum(ot.dpd_breakdown['1_30']) + '</td>' +
+        '<td>' + formatNum(ot.dpd_breakdown['31_60']) + '</td>' +
+        '<td>' + formatNum(ot.dpd_breakdown['61_90']) + '</td>' +
+        '<td>' + formatNum(ot.dpd_breakdown['90_plus']) + '</td>' +
+      '</tr>';
+    }
+
+    if (officerNames.length === 0) {
+      dataContainer.innerHTML = '<div class="empty-section"><p>No officers found for this branch</p></div>';
+      return;
+    }
+
+    dataContainer.innerHTML =
+      '<div class="table-wrap table-fade-in"><table class="data-table drilldown-table"><thead>' +
+      headerRow +
+      '</thead><tbody>' + bodyHtml + '</tbody></table></div>';
+  }
+
+  function renderAccountTable() {
+    var branchData = state.rawData.branches[state.drillBranch];
+    if (!branchData) return;
+    var officer = branchData.officers[state.drillOfficer];
+    if (!officer) {
+      grandTotalCard.innerHTML = '';
+      dataContainer.innerHTML = '<div class="empty-section"><p>No data found for this officer</p></div>';
+      return;
+    }
+
+    // Breadcrumb
+    drilldownBreadcrumb.innerHTML =
+      '<button class="drilldown-back-btn">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>' +
+        ' Back to Officers' +
+      '</button>' +
+      '<div class="drilldown-context">Officer: ' + esc(state.drillOfficer) + (officer.officer_id ? ' (' + esc(officer.officer_id) + ')' : '') + '</div>';
+
+    // Officer totals
+    var t = officer.totals;
+    var pc = pctClass(t.collection_pct);
+    grandTotalCard.innerHTML =
+      '<div class="total-card">' +
+        '<div class="total-card-label">' + esc(state.drillOfficer) + ' \u2014 Summary</div>' +
+        '<div class="simple-metric-grid" style="grid-template-columns:repeat(4,1fr)">' +
+          '<div class="simple-metric-box"><div class="simple-metric-label">Accounts</div><div class="simple-metric-value">' + formatNum(t.accounts) + '</div></div>' +
+          '<div class="simple-metric-box"><div class="simple-metric-label">Demand</div><div class="simple-metric-value">' + formatNum(t.regular_demand) + '</div></div>' +
+          '<div class="simple-metric-box"><div class="simple-metric-label">Collection</div><div class="simple-metric-value">' + formatNum(t.collection) + '</div></div>' +
+          '<div class="simple-metric-box"><div class="simple-metric-label">Coll%</div><div class="simple-metric-value ' + pc + '">' + t.collection_pct + '%</div></div>' +
+        '</div>' +
+      '</div>';
+
+    // Account table
+    var accounts = officer.accounts;
+    if (!accounts || accounts.length === 0) {
+      dataContainer.innerHTML = '<div class="empty-section"><p>Account details not available</p></div>';
+      return;
+    }
+
+    var headerRow = '<tr>' +
+      '<th>Account ID</th>' +
+      '<th class="col-name">Client Name</th>' +
+      '<th>Product</th>' +
+      '<th class="col-demand">Loan Amt</th>' +
+      '<th>DPD</th>' +
+      '<th>Status</th>' +
+      '<th class="col-demand">Demand</th>' +
+      '<th class="col-collection">Collection</th>' +
+      '<th>Partial</th>' +
+    '</tr>';
+
+    var bodyHtml = '';
+    for (var i = 0; i < accounts.length; i++) {
+      var a = accounts[i];
+      bodyHtml += '<tr class="row-slide-in">' +
+        '<td>' + esc(a.account_id) + '</td>' +
+        '<td class="col-name">' + esc(a.client_name) + '</td>' +
+        '<td>' + esc(a.product) + '</td>' +
+        '<td class="col-demand">' + formatNum(a.loan_amount) + '</td>' +
+        '<td>' + formatNum(a.dpd_days) + '</td>' +
+        '<td>' + esc(a.status) + '</td>' +
+        '<td class="col-demand">' + formatNum(a.regular_demand) + '</td>' +
+        '<td class="col-collection">' + formatNum(a.collection) + '</td>' +
+        '<td>' + esc(a.partial_amount) + '</td>' +
+      '</tr>';
+    }
+
+    dataContainer.innerHTML =
+      '<div class="table-wrap table-fade-in"><table class="data-table drilldown-table"><thead>' +
+      headerRow +
+      '</thead><tbody>' + bodyHtml + '</tbody></table></div>';
+  }
+
+  // --- Event delegation for drill-down clicks ---
+  dataContainer.addEventListener('click', function (e) {
+    var branchLink = e.target.closest('.branch-link');
+    if (branchLink) {
+      e.preventDefault();
+      var branch = branchLink.getAttribute('data-branch');
+      if (branch) enterBranchDrilldown(branch);
+      return;
+    }
+    var officerLink = e.target.closest('.officer-link');
+    if (officerLink) {
+      e.preventDefault();
+      var officer = officerLink.getAttribute('data-officer');
+      if (officer) enterOfficerDrilldown(officer);
+      return;
+    }
+  });
+
+  drilldownBreadcrumb.addEventListener('click', function (e) {
+    var backBtn = e.target.closest('.drilldown-back-btn');
+    if (backBtn) {
+      drilldownBack();
+    }
+  });
 
 })();
