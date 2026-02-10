@@ -773,12 +773,14 @@ body {
   font-weight: 600;
   transform: translateY(-100%);
   opacity: 0;
+  pointer-events: none;
   transition: transform 0.25s ease-out, opacity 0.25s ease-out;
 }
 
 .filter-cancel-bar.visible {
   transform: translateY(0);
   opacity: 1;
+  pointer-events: auto;
 }
 
 .filter-cancel-bar span {

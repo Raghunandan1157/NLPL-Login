@@ -357,26 +357,53 @@
     }
   }
 
-  function renderFilterPanel() {
+  function ensureFilterPanel() {
     var panel = document.getElementById('branchFilterPanel');
+    if (panel) return panel;
+    panel = document.createElement('div');
+    panel.id = 'branchFilterPanel';
+    panel.className = 'filter-panel';
+    document.body.appendChild(panel);
+
+    // Single delegated listener — survives innerHTML rebuilds
+    panel.addEventListener('click', function (e) {
+      var rankBtn = e.target.closest('.filter-rank-btn');
+      if (rankBtn) {
+        var rank = rankBtn.getAttribute('data-rank');
+        state.branchRankFilter = (state.branchRankFilter === rank) ? null : rank;
+        renderData();
+        return;
+      }
+      var catBtn = e.target.closest('.filter-cat-btn');
+      if (catBtn) {
+        var cat = catBtn.getAttribute('data-cat');
+        state.branchCategoryFilter = (state.branchCategoryFilter === cat) ? null : cat;
+        renderData();
+        return;
+      }
+      var mainBtn = e.target.closest('.filter-main-btn');
+      if (mainBtn) {
+        state.branchRankFilter = null;
+        state.branchCategoryFilter = null;
+        var cancelBar = document.getElementById('filterCancelBar');
+        if (cancelBar) cancelBar.classList.remove('visible');
+        renderData();
+      }
+    });
+    return panel;
+  }
+
+  function renderFilterPanel() {
+    var panel = ensureFilterPanel();
 
     if (state.activeSection !== 'branch') {
-      // Hide panel and remove layout class
-      if (panel) panel.classList.remove('visible');
+      panel.classList.remove('visible');
       dashboardState.classList.remove('has-filter');
       return;
     }
 
     // Add layout class to push content left
     dashboardState.classList.add('has-filter');
-
-    // Create panel if needed
-    if (!panel) {
-      panel = document.createElement('div');
-      panel.id = 'branchFilterPanel';
-      panel.className = 'filter-panel';
-      document.body.appendChild(panel);
-    }
 
     // Make visible with animation
     requestAnimationFrame(function() {
@@ -389,7 +416,7 @@
     var noFilterActive = !rankActive && !catActive;
     var html = '<div class="filter-panel-title">Filter</div>';
     html += '<div class="filter-section">';
-    html += '<button class="filter-main-btn' + (noFilterActive ? ' active' : '') + '" id="mainTableBtn">Main Table (No Filter)</button>';
+    html += '<button class="filter-main-btn' + (noFilterActive ? ' active' : '') + '">Main Table (No Filter)</button>';
     html += '</div>';
     html += '<div class="filter-section">';
     html += '<div class="filter-section-label">Ranking</div>';
@@ -405,52 +432,36 @@
     }
     html += '</div>';
     panel.innerHTML = html;
+  }
 
-    // Rank button handlers
-    var rankBtns = panel.querySelectorAll('.filter-rank-btn');
-    for (var i = 0; i < rankBtns.length; i++) {
-      rankBtns[i].addEventListener('click', function() {
-        var rank = this.getAttribute('data-rank');
-        state.branchRankFilter = (state.branchRankFilter === rank) ? null : rank;
-        renderData();
-      });
-    }
+  function ensureCancelBar() {
+    var cancelBar = document.getElementById('filterCancelBar');
+    if (cancelBar) return cancelBar;
+    cancelBar = document.createElement('div');
+    cancelBar.id = 'filterCancelBar';
+    cancelBar.className = 'filter-cancel-bar';
+    var sectionTabsEl = document.getElementById('sectionTabs');
+    sectionTabsEl.parentNode.insertBefore(cancelBar, sectionTabsEl.nextSibling);
 
-    // Category button handlers
-    var catBtns = panel.querySelectorAll('.filter-cat-btn');
-    for (var i = 0; i < catBtns.length; i++) {
-      catBtns[i].addEventListener('click', function() {
-        var cat = this.getAttribute('data-cat');
-        state.branchCategoryFilter = (state.branchCategoryFilter === cat) ? null : cat;
+    // Single delegated listener — survives innerHTML rebuilds
+    cancelBar.addEventListener('click', function (e) {
+      if (!e.target.closest('.filter-cancel-btn')) return;
+      state.branchRankFilter = null;
+      state.branchCategoryFilter = null;
+      cancelBar.classList.remove('visible');
+      dataContainer.classList.add('table-fade-out');
+      setTimeout(function () {
+        dataContainer.classList.remove('table-fade-out');
         renderData();
-      });
-    }
-
-    // Main Table (No Filter) button handler
-    var mainBtn = document.getElementById('mainTableBtn');
-    if (mainBtn) {
-      mainBtn.addEventListener('click', function() {
-        state.branchRankFilter = null;
-        state.branchCategoryFilter = null;
-        var cancelBar = document.getElementById('filterCancelBar');
-        if (cancelBar) cancelBar.classList.remove('visible');
-        renderData();
-      });
-    }
+      }, 200);
+    });
+    return cancelBar;
   }
 
   function renderCancelBar() {
-    var cancelBar = document.getElementById('filterCancelBar');
+    var cancelBar = ensureCancelBar();
     var isActive = state.activeSection === 'branch' &&
       state.branchRankFilter && state.branchCategoryFilter;
-
-    if (!cancelBar) {
-      cancelBar = document.createElement('div');
-      cancelBar.id = 'filterCancelBar';
-      cancelBar.className = 'filter-cancel-bar';
-      var sectionTabsEl = document.getElementById('sectionTabs');
-      sectionTabsEl.parentNode.insertBefore(cancelBar, sectionTabsEl.nextSibling);
-    }
 
     if (!isActive) {
       cancelBar.classList.remove('visible');
@@ -464,18 +475,6 @@
     // Show with animation via class
     requestAnimationFrame(function() {
       cancelBar.classList.add('visible');
-    });
-
-    cancelBar.querySelector('.filter-cancel-btn').addEventListener('click', function() {
-      state.branchRankFilter = null;
-      state.branchCategoryFilter = null;
-      // Animate out, then re-render
-      cancelBar.classList.remove('visible');
-      dataContainer.classList.add('table-fade-out');
-      setTimeout(function() {
-        dataContainer.classList.remove('table-fade-out');
-        renderData();
-      }, 200);
     });
   }
 
