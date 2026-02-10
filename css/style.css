@@ -874,6 +874,130 @@ body {
   letter-spacing: 0.2px;
 }
 
+/* ============================================
+   TERMINAL-STYLE SPLASH SCREEN
+   ============================================ */
+.splash-overlay {
+  position: fixed;
+  inset: 0;
+  background: #0A0E14;
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier New', 'Consolas', monospace;
+  transition: opacity 0.5s ease;
+}
+
+.splash-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.12) 0px,
+    transparent 1px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.12) 3px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.splash-overlay.done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.splash-terminal {
+  max-width: 700px;
+  width: 90%;
+  padding: 2rem;
+  position: relative;
+  z-index: 2;
+}
+
+.splash-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.splash-line.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.splash-ts {
+  color: #5C6773;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  min-width: 4rem;
+  line-height: 1.4;
+}
+
+.splash-msg {
+  color: #00FF41;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.splash-ascii {
+  color: #00FF41;
+  font-size: 0.65rem;
+  line-height: 1.15;
+  margin: 0;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.splash-status {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 1rem 2rem;
+  background: rgba(10, 14, 20, 0.9);
+  border-top: 1px solid #1A1F28;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 0.75rem;
+  z-index: 3;
+}
+
+.splash-status-left { color: #00FF41; }
+.splash-status-right { color: #5C6773; }
+
+.splash-cursor {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.9rem;
+  background: #00FF41;
+  vertical-align: middle;
+  animation: cursorBlink 1s step-end infinite;
+}
+
+@keyframes cursorBlink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Splash mobile */
+@media (max-width: 480px) {
+  .splash-terminal { width: 95%; padding: 1rem; }
+  .splash-line { gap: 0.5rem; }
+  .splash-ts { font-size: 0.6rem; min-width: 3rem; }
+  .splash-msg { font-size: 0.7rem; }
+  .splash-ascii { font-size: 0.4rem; }
+  .splash-status { padding: 0.75rem 1rem; font-size: 0.65rem; }
+}
+
 /* ---- Mobile ---- */
 @media (max-width: 440px) {
   body { padding: 0; background: #fff; }
