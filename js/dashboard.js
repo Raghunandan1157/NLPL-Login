@@ -18,8 +18,8 @@
   var state = {
     parsedData: null,
     activeSheet: null,
-    activeSection: 'branch',
-    viewMode: 'card',
+    activeSection: 'region',
+    viewMode: 'table',
     tableCoords: null          // loaded from table_coordinates.json
   };
 
@@ -168,7 +168,7 @@
         var parsed = parseCollectionReport(workbook, state.tableCoords);
         state.parsedData = parsed;
         state.activeSheet = parsed.sheetOrder[0] || 'OverAll';
-        state.activeSection = 'branch';
+        state.activeSection = 'region';
         fileNameEl.textContent = file.name;
         hideLoading();
         showDashboard();
@@ -299,28 +299,29 @@
       '<div class="total-card">' +
         '<div class="total-card-label">Grand Total</div>' +
         '<div class="metric-grid">' +
-          metricGroupHtml('Regular', total.regularDemand, true) +
-          metricGroupHtml('1-30 DPD', total.dpd1_30, false) +
-          metricGroupHtml('31-60 DPD', total.dpd31_60, false) +
-          metricGroupHtml('PNPA', total.pnpa, false) +
+          metricGroupHtml('Regular', total.regularDemand, true, 'metric-regular') +
+          metricGroupHtml('1-30 DPD', total.dpd1_30, false, 'metric-dpd1') +
+          metricGroupHtml('31-60 DPD', total.dpd31_60, false, 'metric-dpd2') +
+          metricGroupHtml('PNPA', total.pnpa, false, 'metric-pnpa') +
           npaGroupHtml(total.npa) +
         '</div>' +
       '</div>';
   }
 
-  function metricGroupHtml(label, data, hasFtod) {
+  function metricGroupHtml(label, data, hasFtod, className) {
     if (!data) return '';
+    var cls = className ? 'metric-group ' + className : 'metric-group';
     var rows = metricRow('Demand', data.demand, false) +
       metricRow('Collection', data.collection, false);
     if (hasFtod) rows += metricRow('FTOD', data.ftod, false);
     else rows += metricRow('Balance', data.balance, false);
     rows += metricRow('Coll%', data.collectionPct, true);
-    return '<div class="metric-group"><div class="metric-group-label">' + label + '</div>' + rows + '</div>';
+    return '<div class="' + cls + '"><div class="metric-group-label">' + label + '</div>' + rows + '</div>';
   }
 
   function npaGroupHtml(data) {
     if (!data) return '';
-    return '<div class="metric-group"><div class="metric-group-label">NPA</div>' +
+    return '<div class="metric-group metric-npa"><div class="metric-group-label">NPA</div>' +
       metricRow('Demand', data.demand, false) +
       metricRow('Act. A/c', data.activationAcct, false) +
       metricRow('Act. Amt', data.activationAmt, false) +
@@ -350,10 +351,10 @@
           rankHtml +
         '</div>' +
         '<div class="metric-grid">' +
-          metricGroupHtml('Regular', r.regularDemand, true) +
-          metricGroupHtml('1-30 DPD', r.dpd1_30, false) +
-          metricGroupHtml('31-60 DPD', r.dpd31_60, false) +
-          metricGroupHtml('PNPA', r.pnpa, false) +
+          metricGroupHtml('Regular', r.regularDemand, true, 'metric-regular') +
+          metricGroupHtml('1-30 DPD', r.dpd1_30, false, 'metric-dpd1') +
+          metricGroupHtml('31-60 DPD', r.dpd31_60, false, 'metric-dpd2') +
+          metricGroupHtml('PNPA', r.pnpa, false, 'metric-pnpa') +
           npaGroupHtml(r.npa) +
         '</div>';
       dataContainer.appendChild(card);
@@ -365,12 +366,12 @@
 
   function renderTableFull(section) {
     var groups = [
-      { label: 'Regular Demand', cols: ['Demand', 'Coll.', 'FTOD', 'Coll%'] },
-      { label: '1-30 DPD', cols: ['Demand', 'Coll.', 'Bal.', 'Coll%'] },
-      { label: '31-60 DPD', cols: ['Demand', 'Coll.', 'Bal.', 'Coll%'] },
-      { label: 'PNPA', cols: ['Demand', 'Coll.', 'Bal.', 'Coll%'] },
-      { label: 'NPA', cols: ['Demand', 'Act.A/c', 'Act.Amt', 'Cls.A/c', 'Cls.Amt'] },
-      { label: 'Metrics', cols: ['Rank', 'Perf.'] }
+      { label: 'Regular Demand', cls: 'group-regular', cols: ['Demand', 'Coll.', 'FTOD', 'Coll%'] },
+      { label: '1-30 DPD', cls: 'group-dpd1', cols: ['Demand', 'Coll.', 'Bal.', 'Coll%'] },
+      { label: '31-60 DPD', cls: 'group-dpd2', cols: ['Demand', 'Coll.', 'Bal.', 'Coll%'] },
+      { label: 'PNPA', cls: 'group-pnpa', cols: ['Demand', 'Coll.', 'Bal.', 'Coll%'] },
+      { label: 'NPA', cls: 'group-npa', cols: ['Demand', 'Act.A/c', 'Act.Amt', 'Cls.A/c', 'Cls.Amt'] },
+      { label: 'Metrics', cls: 'group-metrics', cols: ['Rank', 'Perf.'] }
     ];
 
     var totalCols = 1; // name column
@@ -379,51 +380,59 @@
     // Group header row
     var groupRow = '<tr><th class="group-header"></th>';
     for (var g = 0; g < groups.length; g++) {
-      groupRow += '<th class="group-header" colspan="' + groups[g].cols.length + '">' + groups[g].label + '</th>';
+      groupRow += '<th class="group-header ' + groups[g].cls + '" colspan="' + groups[g].cols.length + '">' + groups[g].label + '</th>';
     }
     groupRow += '</tr>';
 
-    // Sub-header row
-    var subRow = '<tr><th>Name</th>';
+    // Sub-header row — column type classes
+    var colClasses = [
+      ['col-demand', 'col-collection', 'col-balance', 'col-pct'],   // Regular
+      ['col-demand', 'col-collection', 'col-balance', 'col-pct'],   // 1-30 DPD
+      ['col-demand', 'col-collection', 'col-balance', 'col-pct'],   // 31-60 DPD
+      ['col-demand', 'col-collection', 'col-balance', 'col-pct'],   // PNPA
+      ['col-demand', 'col-demand', 'col-demand', 'col-collection', 'col-collection'], // NPA
+      ['col-rank', 'col-perf']                                      // Metrics
+    ];
+    var subRow = '<tr><th class="col-name">Name</th>';
     for (var g = 0; g < groups.length; g++) {
       for (var c = 0; c < groups[g].cols.length; c++) {
-        subRow += '<th>' + groups[g].cols[c] + '</th>';
+        subRow += '<th class="' + colClasses[g][c] + '">' + groups[g].cols[c] + '</th>';
       }
     }
     subRow += '</tr>';
 
     function rowToTds(r, isTotal) {
       var cls = isTotal ? ' class="total-row"' : '';
-      var html = '<tr' + cls + '><td>' + esc(r.name) + '</td>';
+      var html = '<tr' + cls + '><td class="col-name">' + esc(r.name) + '</td>';
       // Regular
-      html += '<td>' + formatNum(r.regularDemand.demand) + '</td>';
-      html += '<td>' + formatNum(r.regularDemand.collection) + '</td>';
-      html += '<td>' + formatNum(r.regularDemand.ftod) + '</td>';
-      html += '<td class="' + pctClass(r.regularDemand.collectionPct) + '">' + formatPct(r.regularDemand.collectionPct) + '</td>';
+      html += '<td class="col-demand">' + formatNum(r.regularDemand.demand) + '</td>';
+      html += '<td class="col-collection">' + formatNum(r.regularDemand.collection) + '</td>';
+      html += '<td class="col-balance">' + formatNum(r.regularDemand.ftod) + '</td>';
+      html += '<td class="col-pct ' + pctClass(r.regularDemand.collectionPct) + '">' + formatPct(r.regularDemand.collectionPct) + '</td>';
       // 1-30 DPD
-      html += '<td>' + formatNum(r.dpd1_30.demand) + '</td>';
-      html += '<td>' + formatNum(r.dpd1_30.collection) + '</td>';
-      html += '<td>' + formatNum(r.dpd1_30.balance) + '</td>';
-      html += '<td class="' + pctClass(r.dpd1_30.collectionPct) + '">' + formatPct(r.dpd1_30.collectionPct) + '</td>';
+      html += '<td class="col-demand">' + formatNum(r.dpd1_30.demand) + '</td>';
+      html += '<td class="col-collection">' + formatNum(r.dpd1_30.collection) + '</td>';
+      html += '<td class="col-balance">' + formatNum(r.dpd1_30.balance) + '</td>';
+      html += '<td class="col-pct ' + pctClass(r.dpd1_30.collectionPct) + '">' + formatPct(r.dpd1_30.collectionPct) + '</td>';
       // 31-60 DPD
-      html += '<td>' + formatNum(r.dpd31_60.demand) + '</td>';
-      html += '<td>' + formatNum(r.dpd31_60.collection) + '</td>';
-      html += '<td>' + formatNum(r.dpd31_60.balance) + '</td>';
-      html += '<td class="' + pctClass(r.dpd31_60.collectionPct) + '">' + formatPct(r.dpd31_60.collectionPct) + '</td>';
+      html += '<td class="col-demand">' + formatNum(r.dpd31_60.demand) + '</td>';
+      html += '<td class="col-collection">' + formatNum(r.dpd31_60.collection) + '</td>';
+      html += '<td class="col-balance">' + formatNum(r.dpd31_60.balance) + '</td>';
+      html += '<td class="col-pct ' + pctClass(r.dpd31_60.collectionPct) + '">' + formatPct(r.dpd31_60.collectionPct) + '</td>';
       // PNPA
-      html += '<td>' + formatNum(r.pnpa.demand) + '</td>';
-      html += '<td>' + formatNum(r.pnpa.collection) + '</td>';
-      html += '<td>' + formatNum(r.pnpa.balance) + '</td>';
-      html += '<td class="' + pctClass(r.pnpa.collectionPct) + '">' + formatPct(r.pnpa.collectionPct) + '</td>';
+      html += '<td class="col-demand">' + formatNum(r.pnpa.demand) + '</td>';
+      html += '<td class="col-collection">' + formatNum(r.pnpa.collection) + '</td>';
+      html += '<td class="col-balance">' + formatNum(r.pnpa.balance) + '</td>';
+      html += '<td class="col-pct ' + pctClass(r.pnpa.collectionPct) + '">' + formatPct(r.pnpa.collectionPct) + '</td>';
       // NPA
-      html += '<td>' + formatNum(r.npa.demand) + '</td>';
-      html += '<td>' + formatNum(r.npa.activationAcct) + '</td>';
-      html += '<td>' + formatNum(r.npa.activationAmt) + '</td>';
-      html += '<td>' + formatNum(r.npa.closureAcct) + '</td>';
-      html += '<td>' + formatNum(r.npa.closureAmt) + '</td>';
+      html += '<td class="col-collection">' + formatNum(r.npa.demand) + '</td>';
+      html += '<td class="col-collection">' + formatNum(r.npa.activationAcct) + '</td>';
+      html += '<td class="col-collection">' + formatNum(r.npa.activationAmt) + '</td>';
+      html += '<td class="col-collection">' + formatNum(r.npa.closureAcct) + '</td>';
+      html += '<td class="col-collection">' + formatNum(r.npa.closureAmt) + '</td>';
       // Metrics
-      html += '<td>' + formatNum(r.metrics.rank) + '</td>';
-      html += '<td class="' + perfClass(r.metrics.performance) + '">' + esc(r.metrics.performance) + '</td>';
+      html += '<td class="col-rank">' + formatNum(r.metrics.rank) + '</td>';
+      html += '<td class="col-perf ' + perfClass(r.metrics.performance) + '">' + esc(r.metrics.performance) + '</td>';
       html += '</tr>';
       return html;
     }

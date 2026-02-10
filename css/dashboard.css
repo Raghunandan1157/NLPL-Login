@@ -294,8 +294,8 @@ body {
 .total-card {
   margin: 8px 16px;
   padding: 16px;
-  background: linear-gradient(135deg, #E0F5F2, #C8EDE8);
-  border: 1.5px solid rgba(14, 139, 125, 0.25);
+  background: #F4B084;
+  border: 1.5px solid #D9904E;
   border-radius: 16px;
   animation: fadeSlideUp 0.3s ease-out;
 }
@@ -303,7 +303,7 @@ body {
 .total-card-label {
   font-size: 0.68rem;
   font-weight: 700;
-  color: #0A6E63;
+  color: #7B4B1E;
   text-transform: uppercase;
   letter-spacing: 0.8px;
   margin-bottom: 10px;
@@ -360,14 +360,30 @@ body {
   padding: 10px;
 }
 
+/* Card view metric group colors */
+.metric-group.metric-regular { background: #FCE4D6; }
+.metric-group.metric-dpd1 { background: #FCE4D6; }
+.metric-group.metric-dpd2 { background: #FCE4D6; }
+.metric-group.metric-pnpa { background: #FCE4D6; }
+.metric-group.metric-npa { background: #E2EFDA; }
+.metric-group.metric-metrics { background: #BDD7EE; }
+
 .metric-group-label {
   font-size: 0.62rem;
   font-weight: 700;
-  color: #0E8B7D;
+  color: #8B5E3C;
   text-transform: uppercase;
   letter-spacing: 0.4px;
   margin-bottom: 6px;
 }
+
+/* Metric group label colors - darker versions of group bg */
+.metric-regular .metric-group-label,
+.metric-dpd1 .metric-group-label,
+.metric-dpd2 .metric-group-label,
+.metric-pnpa .metric-group-label { color: #8B5E3C; }
+.metric-npa .metric-group-label { color: #3D6B3D; }
+.metric-metrics .metric-group-label { color: #2B5A8C; }
 
 .metric-row {
   display: flex;
@@ -446,50 +462,79 @@ body {
   font-weight: 700;
   color: #1A1D23;
   text-align: left;
-  border-bottom: 2px solid #EEF1F4;
+  border: 1px solid #D6D6D6;
 }
 
+/* -- Group header row colors -- */
 .data-table .group-header {
   font-size: 0.6rem;
   font-weight: 700;
-  color: #0E8B7D;
+  color: #1A1D23;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   text-align: center;
-  background: #E0F5F2;
-  border-bottom: 1px solid #C8EDE8;
+  background: #FCE4D6;
+  border: 1px solid #D6D6D6;
 }
+.data-table .group-header.group-regular,
+.data-table .group-header.group-dpd1,
+.data-table .group-header.group-dpd2,
+.data-table .group-header.group-pnpa,
+.data-table .group-header.group-npa { background: #FCE4D6; }
+.data-table .group-header.group-metrics { background: #BDD7EE; }
+
+/* -- Sub-header (th) column colors -- */
+.data-table th.col-name { background: #F4B084; }
+.data-table th.col-demand,
+.data-table th.col-balance { background: #FCE4D6; }
+.data-table th.col-collection { background: #E2EFDA; }
+.data-table th.col-pct { background: #FFFFCC; }
+.data-table th.col-rank,
+.data-table th.col-perf { background: #BDD7EE; }
 
 .data-table td {
   padding: 8px 12px;
   color: #1A1D23;
-  border-bottom: 1px solid #F4F7F9;
+  border: 1px solid #D6D6D6;
 }
+
+/* -- Data cell (td) column colors -- */
+.data-table td.col-name { background: #FCE4D6; }
+.data-table td.col-demand,
+.data-table td.col-balance { background: #FCE4D6; }
+.data-table td.col-collection { background: #E2EFDA; }
+.data-table td.col-pct { background: #FFFFCC; }
+.data-table td.col-rank,
+.data-table td.col-perf { background: #DDEBF7; }
 
 .data-table tbody tr:hover {
   background: #FAFBFC;
 }
 
+/* Sticky first column (Name) */
 .data-table th:first-child,
 .data-table td:first-child {
   position: sticky;
   left: 0;
-  background: #fff;
   z-index: 2;
   font-weight: 700;
   min-width: 130px;
-  border-right: 2px solid #EEF1F4;
+  border-right: 2px solid #D6D6D6;
 }
 
 .data-table thead th:first-child {
-  background: #F4F7F9;
+  background: #F4B084;
+}
+.data-table tbody td:first-child {
+  background: #FCE4D6;
 }
 
+/* Grand Total row */
 .data-table .total-row td {
   font-weight: 800;
-  background: #E0F5F2 !important;
-  color: #0A6E63;
-  border-top: 2px solid #0E8B7D;
+  background: #F4B084 !important;
+  color: #1A1D23;
+  border-top: 2px solid #D6D6D6;
 }
 
 /* ---- Loading Overlay ---- */
