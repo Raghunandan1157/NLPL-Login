@@ -778,6 +778,27 @@ body {
 
 .success-overlay.show .success-tag { opacity: 1; transform: translateY(0); }
 
+.dashboard-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 28px;
+  padding: 14px 32px;
+  background: #fff;
+  color: #0E8B7D;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 14px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease 1.1s;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+.success-overlay.show .dashboard-link { opacity: 1; transform: translateY(0); }
+.dashboard-link:active { transform: scale(0.95); }
+
 /* ---- Loading Skeleton ---- */
 .skeleton-field {
   margin-bottom: 20px;
