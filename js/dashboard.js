@@ -20,7 +20,9 @@
     activeSheet: null,
     activeSection: 'region',
     viewMode: 'table',
-    tableCoords: null          // loaded from table_coordinates.json
+    tableCoords: null,          // loaded from table_coordinates.json
+    branchRankFilter: null,     // null, 'top10', 'bottom10'
+    branchCategoryFilter: null  // null, 'regular', 'dpd1', 'dpd2', 'pnpa'
   };
 
   // --- Load table_coordinates.json (best-effort, non-blocking) ---
@@ -54,6 +56,7 @@
   var sheetTabs = document.getElementById('sheetTabs');
   var sectionTabs = document.getElementById('sectionTabs');
   var viewToggle = document.getElementById('viewToggle');
+  var reportTitle = document.getElementById('reportTitle');
   var grandTotalCard = document.getElementById('grandTotalCard');
   var dataContainer = document.getElementById('dataContainer');
   var loadingOverlay = document.getElementById('loadingOverlay');
@@ -105,6 +108,50 @@
   function esc(str) {
     if (!str) return '';
     return String(str).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  var FILTER_CATEGORIES = {
+    regular: { label: 'Regular Demand vs Collection', dataKey: 'regularDemand', rankKey: 'collectionPct', type: 'pct' },
+    dpd1:    { label: '1-30 DPD', dataKey: 'dpd1_30', rankKey: 'collectionPct', type: 'pct' },
+    dpd2:    { label: '31-60 DPD', dataKey: 'dpd31_60', rankKey: 'collectionPct', type: 'pct' },
+    pnpa:    { label: 'PNPA', dataKey: 'pnpa', rankKey: 'collectionPct', type: 'pct' },
+    npa:     { label: 'NPA', dataKey: 'npa', rankKey: 'demand', type: 'demand' }
+  };
+  var FILTER_CATEGORY_ORDER = ['regular', 'dpd1', 'dpd2', 'pnpa', 'npa'];
+
+  function getFilteredBranches(rows, rankFilter, categoryFilter) {
+    var cat = FILTER_CATEGORIES[categoryFilter];
+    if (!cat) return [];
+
+    var valid = [];
+    for (var i = 0; i < rows.length; i++) {
+      var data = rows[i][cat.dataKey];
+      if (!data) continue;
+      var val = data[cat.rankKey];
+      if (val === null || val === undefined || val === '-' || val === '') continue;
+      if (typeof val !== 'number') continue;
+
+      var sortVal;
+      if (cat.type === 'pct') {
+        sortVal = val <= 1 ? val * 100 : val;
+        if (sortVal === 0) continue;
+      } else {
+        sortVal = val;
+        if (sortVal === 0) continue;
+      }
+      valid.push({ idx: i, row: rows[i], sortVal: sortVal });
+    }
+
+    valid.sort(function(a, b) { return b.sortVal - a.sortVal; });
+
+    if (rankFilter === 'top10') {
+      return valid.slice(0, Math.min(10, valid.length));
+    } else if (rankFilter === 'bottom10') {
+      var bottom = valid.slice(-Math.min(10, valid.length));
+      bottom.sort(function(a, b) { return a.sortVal - b.sortVal; });
+      return bottom;
+    }
+    return [];
   }
 
   // --- Loading ---
@@ -170,6 +217,8 @@
         state.activeSheet = parsed.sheetOrder[0] || 'OverAll';
         state.activeSection = 'region';
         fileNameEl.textContent = file.name;
+        var displayName = file.name.replace(/\.(xlsx|xlsm)$/i, '');
+        reportTitle.textContent = displayName;
         hideLoading();
         showDashboard();
       } catch (err) {
@@ -220,6 +269,8 @@
     var key = this.getAttribute('data-sheet');
     if (key === state.activeSheet) return;
     state.activeSheet = key;
+    state.branchRankFilter = null;
+    state.branchCategoryFilter = null;
     renderSheetTabs();
     renderSectionTabs();
     renderData();
@@ -245,6 +296,10 @@
     var key = this.getAttribute('data-section');
     if (key === state.activeSection) return;
     state.activeSection = key;
+    state.branchRankFilter = null;
+    state.branchCategoryFilter = null;
+    var cancelBar = document.getElementById('filterCancelBar');
+    if (cancelBar) cancelBar.classList.remove('visible');
     renderSectionTabs();
     renderData();
   }
@@ -269,9 +324,25 @@
     var sheetData = state.parsedData.sheets[state.activeSheet];
     if (!sheetData) return;
     var section = sheetData.sections[state.activeSection];
+
+    // Render filter panel (only visible for branch)
+    renderFilterPanel();
+    // Render cancel bar (only visible when filter is active)
+    renderCancelBar();
     if (!section) {
       grandTotalCard.innerHTML = '';
       dataContainer.innerHTML = '<div class="empty-section"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><p>No data for this section</p></div>';
+      return;
+    }
+
+    // Check if branch filter is fully active (both rank + category selected)
+    var isFilterActive = state.activeSection === 'branch' &&
+      state.branchRankFilter && state.branchCategoryFilter;
+
+    if (isFilterActive) {
+      grandTotalCard.innerHTML = '';
+      var filtered = getFilteredBranches(section.rows, state.branchRankFilter, state.branchCategoryFilter);
+      renderFilteredTable(filtered, state.branchCategoryFilter);
       return;
     }
 
@@ -284,6 +355,176 @@
       if (state.viewMode === 'card') renderCardsSimple(section.rows);
       else renderTableSimple(section);
     }
+  }
+
+  function renderFilterPanel() {
+    var panel = document.getElementById('branchFilterPanel');
+
+    if (state.activeSection !== 'branch') {
+      // Hide panel and remove layout class
+      if (panel) panel.classList.remove('visible');
+      dashboardState.classList.remove('has-filter');
+      return;
+    }
+
+    // Add layout class to push content left
+    dashboardState.classList.add('has-filter');
+
+    // Create panel if needed
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.id = 'branchFilterPanel';
+      panel.className = 'filter-panel';
+      document.body.appendChild(panel);
+    }
+
+    // Make visible with animation
+    requestAnimationFrame(function() {
+      panel.classList.add('visible');
+    });
+
+    var rankActive = state.branchRankFilter;
+    var catActive = state.branchCategoryFilter;
+
+    var noFilterActive = !rankActive && !catActive;
+    var html = '<div class="filter-panel-title">Filter</div>';
+    html += '<div class="filter-section">';
+    html += '<button class="filter-main-btn' + (noFilterActive ? ' active' : '') + '" id="mainTableBtn">Main Table (No Filter)</button>';
+    html += '</div>';
+    html += '<div class="filter-section">';
+    html += '<div class="filter-section-label">Ranking</div>';
+    html += '<button class="filter-rank-btn' + (rankActive === 'top10' ? ' active' : '') + '" data-rank="top10">Top 10 Branches</button>';
+    html += '<button class="filter-rank-btn' + (rankActive === 'bottom10' ? ' active' : '') + '" data-rank="bottom10">Bottom 10 Branches</button>';
+    html += '</div>';
+    html += '<div class="filter-section">';
+    html += '<div class="filter-section-label">Report Category</div>';
+    for (var i = 0; i < FILTER_CATEGORY_ORDER.length; i++) {
+      var key = FILTER_CATEGORY_ORDER[i];
+      var cat = FILTER_CATEGORIES[key];
+      html += '<button class="filter-cat-btn' + (catActive === key ? ' active' : '') + '" data-cat="' + key + '">' + cat.label + '</button>';
+    }
+    html += '</div>';
+    panel.innerHTML = html;
+
+    // Rank button handlers
+    var rankBtns = panel.querySelectorAll('.filter-rank-btn');
+    for (var i = 0; i < rankBtns.length; i++) {
+      rankBtns[i].addEventListener('click', function() {
+        var rank = this.getAttribute('data-rank');
+        state.branchRankFilter = (state.branchRankFilter === rank) ? null : rank;
+        renderData();
+      });
+    }
+
+    // Category button handlers
+    var catBtns = panel.querySelectorAll('.filter-cat-btn');
+    for (var i = 0; i < catBtns.length; i++) {
+      catBtns[i].addEventListener('click', function() {
+        var cat = this.getAttribute('data-cat');
+        state.branchCategoryFilter = (state.branchCategoryFilter === cat) ? null : cat;
+        renderData();
+      });
+    }
+
+    // Main Table (No Filter) button handler
+    var mainBtn = document.getElementById('mainTableBtn');
+    if (mainBtn) {
+      mainBtn.addEventListener('click', function() {
+        state.branchRankFilter = null;
+        state.branchCategoryFilter = null;
+        var cancelBar = document.getElementById('filterCancelBar');
+        if (cancelBar) cancelBar.classList.remove('visible');
+        renderData();
+      });
+    }
+  }
+
+  function renderCancelBar() {
+    var cancelBar = document.getElementById('filterCancelBar');
+    var isActive = state.activeSection === 'branch' &&
+      state.branchRankFilter && state.branchCategoryFilter;
+
+    if (!cancelBar) {
+      cancelBar = document.createElement('div');
+      cancelBar.id = 'filterCancelBar';
+      cancelBar.className = 'filter-cancel-bar';
+      var sectionTabsEl = document.getElementById('sectionTabs');
+      sectionTabsEl.parentNode.insertBefore(cancelBar, sectionTabsEl.nextSibling);
+    }
+
+    if (!isActive) {
+      cancelBar.classList.remove('visible');
+      return;
+    }
+
+    var catLabel = FILTER_CATEGORIES[state.branchCategoryFilter].label;
+    var rankLabel = state.branchRankFilter === 'top10' ? 'Top 10' : 'Bottom 10';
+    cancelBar.innerHTML = '<span>' + rankLabel + ' \u2014 ' + catLabel + '</span><button class="filter-cancel-btn">Cancel Filter \u2715</button>';
+
+    // Show with animation via class
+    requestAnimationFrame(function() {
+      cancelBar.classList.add('visible');
+    });
+
+    cancelBar.querySelector('.filter-cancel-btn').addEventListener('click', function() {
+      state.branchRankFilter = null;
+      state.branchCategoryFilter = null;
+      // Animate out, then re-render
+      cancelBar.classList.remove('visible');
+      dataContainer.classList.add('table-fade-out');
+      setTimeout(function() {
+        dataContainer.classList.remove('table-fade-out');
+        renderData();
+      }, 200);
+    });
+  }
+
+  function renderFilteredTable(rows, category) {
+    var cat = FILTER_CATEGORIES[category];
+    if (!cat) return;
+
+    var headerRow, bodyHtml = '';
+
+    if (cat.type === 'demand') {
+      // NPA: 6 columns — Name, Demand, Act.A/c, Act.Amt, Cls.A/c, Cls.Amt
+      headerRow = '<tr><th class="col-name">Branch Name</th><th class="col-demand">Demand</th><th class="col-demand">Act. A/c</th><th class="col-demand">Act. Amt</th><th class="col-collection">Cls. A/c</th><th class="col-collection">Cls. Amt</th></tr>';
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i].row;
+        var data = r[cat.dataKey];
+        bodyHtml += '<tr class="row-slide-in">' +
+          '<td class="col-name">' + esc(r.name) + '</td>' +
+          '<td class="col-demand">' + formatNum(data.demand) + '</td>' +
+          '<td class="col-demand">' + formatNum(data.activationAcct) + '</td>' +
+          '<td class="col-demand">' + formatNum(data.activationAmt) + '</td>' +
+          '<td class="col-collection">' + formatNum(data.closureAcct) + '</td>' +
+          '<td class="col-collection">' + formatNum(data.closureAmt) + '</td>' +
+        '</tr>';
+      }
+    } else {
+      // Regular/DPD/PNPA: 4 columns — Name, Demand, Collection, Collection%
+      headerRow = '<tr><th class="col-name">Branch Name</th><th class="col-demand">Demand</th><th class="col-collection">Collection</th><th class="col-pct">Collection %</th></tr>';
+      for (var i = 0; i < rows.length; i++) {
+        var r = rows[i].row;
+        var data = r[cat.dataKey];
+        bodyHtml += '<tr class="row-slide-in">' +
+          '<td class="col-name">' + esc(r.name) + '</td>' +
+          '<td class="col-demand">' + formatNum(data.demand) + '</td>' +
+          '<td class="col-collection">' + formatNum(data.collection) + '</td>' +
+          '<td class="col-pct ' + pctClass(data.collectionPct) + '">' + formatPct(data.collectionPct) + '</td>' +
+        '</tr>';
+      }
+    }
+
+    if (rows.length === 0) {
+      dataContainer.innerHTML = '<div class="empty-section"><p>No valid data to rank</p></div>';
+      return;
+    }
+
+    dataContainer.innerHTML = '';
+    dataContainer.innerHTML =
+      '<div class="table-wrap table-fade-in"><table class="data-table filtered-table"><thead>' +
+      headerRow +
+      '</thead><tbody>' + bodyHtml + '</tbody></table></div>';
   }
 
   // --- FULL layout renderers ---
