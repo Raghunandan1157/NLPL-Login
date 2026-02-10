@@ -19,8 +19,26 @@
     parsedData: null,
     activeSheet: null,
     activeSection: 'branch',
-    viewMode: 'card'
+    viewMode: 'card',
+    tableCoords: null          // loaded from table_coordinates.json
   };
+
+  // --- Load table_coordinates.json (best-effort, non-blocking) ---
+  (function loadTableCoordinates() {
+    fetch('table_coordinates.json')
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        state.tableCoords = data;
+        console.log('[dashboard] table_coordinates.json loaded successfully');
+      })
+      .catch(function () {
+        state.tableCoords = null;
+        console.log('[dashboard] table_coordinates.json not found — parser will use hardcoded offsets');
+      });
+  })();
 
   // --- DOM refs ---
   var userName = document.getElementById('userName');
@@ -147,7 +165,7 @@
       try {
         var data = new Uint8Array(e.target.result);
         var workbook = XLSX.read(data, { type: 'array' });
-        var parsed = parseCollectionReport(workbook);
+        var parsed = parseCollectionReport(workbook, state.tableCoords);
         state.parsedData = parsed;
         state.activeSheet = parsed.sheetOrder[0] || 'OverAll';
         state.activeSection = 'branch';

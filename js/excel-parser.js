@@ -1,22 +1,39 @@
 /* ================================================
    NLPL — Excel Report Parser
    Parses Daily Collection Report .xlsx/.xlsm files
+
+   Supports two modes:
+     1. Dynamic coordinates from table_coordinates.json
+        (passed as 2nd argument to parseCollectionReport)
+     2. Hardcoded fallback when coordinates are unavailable
    ================================================ */
 (function () {
   'use strict';
 
-  // Section row offsets (1-indexed, matching Excel rows)
-  // Data rows are between dataStart and totalRow (exclusive)
-  var SECTIONS = {
-    region:   { titleRow: 2,   dataStart: 6,   totalRow: 11  },
-    district: { titleRow: 15,  dataStart: 19,  totalRow: 49  },
-    branch:   { titleRow: 53,  dataStart: 57,  totalRow: 184 },
-    igl:      { titleRow: 188, dataStart: 194, totalRow: 199 },
-    fig:      { titleRow: 203, dataStart: 209, totalRow: 214 },
-    il:       { titleRow: 218, dataStart: 224, totalRow: 229 }
+  // -------------------------------------------------------------------
+  // Hardcoded fallback section offsets (1-indexed, matching Excel rows)
+  // Used only when table_coordinates.json is NOT available
+  // -------------------------------------------------------------------
+  var FALLBACK_SECTIONS = {
+    region:   { titleRow: 2,   dataStart: 6,   dataEnd: 10,  totalRow: 11  },
+    district: { titleRow: 15,  dataStart: 19,  dataEnd: 48,  totalRow: 49  },
+    branch:   { titleRow: 53,  dataStart: 57,  dataEnd: 183, totalRow: 184 },
+    igl:      { titleRow: 188, dataStart: 194, dataEnd: 198, totalRow: 199 },
+    fig:      { titleRow: 203, dataStart: 209, dataEnd: 213, totalRow: 214 },
+    il:       { titleRow: 218, dataStart: 224, dataEnd: 228, totalRow: 229 }
   };
 
-  // Sheet types: 'full' has 25 columns, 'simple' has 5 columns
+  // Mapping from table_coordinates.json table names to our internal keys
+  var TABLE_NAME_MAP = {
+    region_wise:     'region',
+    district_wise:   'district',
+    branch_wise:     'branch',
+    igl_region_wise: 'igl',
+    fig_region_wise: 'fig',
+    il_region_wise:  'il'
+  };
+
+  // Sheet types: 'full' has 24 columns (B:Y), 'simple' has 4 columns (B:E)
   var SHEET_CONFIG = {
     'OverAll':              { type: 'full',   label: 'Overall' },
     'OverAll_On-Date':      { type: 'simple', label: 'On-Date' },
@@ -35,6 +52,73 @@
     il: 'IL'
   };
 
+  var SECTION_ORDER = ['region', 'district', 'branch', 'igl', 'fig', 'il'];
+
+  // -------------------------------------------------------------------
+  // Build per-sheet section definitions from table_coordinates.json
+  // Returns an object keyed by sheet name, each value is a SECTIONS map
+  // -------------------------------------------------------------------
+  function buildSectionsFromCoords(tableCoords) {
+    var perSheet = {};
+    var sheets = tableCoords && tableCoords.sheets;
+    if (!sheets) return null;
+
+    var sheetNames = Object.keys(sheets);
+    for (var s = 0; s < sheetNames.length; s++) {
+      var sheetName = sheetNames[s];
+      var sheetDef = sheets[sheetName];
+      if (!sheetDef || !sheetDef.tables) continue;
+
+      var sections = {};
+      var tableNames = Object.keys(sheetDef.tables);
+      for (var t = 0; t < tableNames.length; t++) {
+        var tableName = tableNames[t];
+        var sectionKey = TABLE_NAME_MAP[tableName];
+        if (!sectionKey) continue; // skip unknown tables (e.g. next_day)
+
+        var tbl = sheetDef.tables[tableName];
+        if (!tbl.data_start_row || !tbl.grand_total_row) continue;
+
+        sections[sectionKey] = {
+          dataStart: tbl.data_start_row,
+          dataEnd:   tbl.data_end_row,
+          totalRow:  tbl.grand_total_row
+        };
+      }
+
+      // Only store if we found at least one section
+      if (Object.keys(sections).length > 0) {
+        perSheet[sheetName] = sections;
+      }
+    }
+
+    return Object.keys(perSheet).length > 0 ? perSheet : null;
+  }
+
+  // -------------------------------------------------------------------
+  // Get the section definitions for a given sheet.
+  // Priority: per-sheet coords from JSON > fallback hardcoded values
+  // -------------------------------------------------------------------
+  function getSectionsForSheet(sheetName, perSheetCoords) {
+    if (perSheetCoords && perSheetCoords[sheetName]) {
+      // Merge: start with fallback, override with JSON coords per section
+      var merged = {};
+      for (var i = 0; i < SECTION_ORDER.length; i++) {
+        var key = SECTION_ORDER[i];
+        if (perSheetCoords[sheetName][key]) {
+          merged[key] = perSheetCoords[sheetName][key];
+        } else if (FALLBACK_SECTIONS[key]) {
+          merged[key] = FALLBACK_SECTIONS[key];
+        }
+      }
+      return merged;
+    }
+    return FALLBACK_SECTIONS;
+  }
+
+  // -------------------------------------------------------------------
+  // Value helpers
+  // -------------------------------------------------------------------
   function cleanValue(val) {
     if (val === undefined || val === null || val === '') return null;
     if (typeof val === 'number') return val;
@@ -50,6 +134,9 @@
     return val;
   }
 
+  // -------------------------------------------------------------------
+  // Row parsers
+  // -------------------------------------------------------------------
   function parseFullRow(raw) {
     // raw is 0-indexed array from sheet_to_json header:1
     // Column B(1)=Name, C(2)=Demand... Y(24)=Performance
@@ -105,10 +192,20 @@
     };
   }
 
+  // -------------------------------------------------------------------
+  // Extract one section from the sheet rows.
+  // sectionDef has: dataStart, dataEnd (both 1-indexed inclusive),
+  //                 totalRow (1-indexed)
+  // allRows is 0-indexed.
+  // -------------------------------------------------------------------
   function extractSection(allRows, sectionDef, parseRowFn) {
     var rows = [];
-    // dataStart and totalRow are 1-indexed; allRows is 0-indexed
-    for (var r = sectionDef.dataStart - 1; r < sectionDef.totalRow - 1; r++) {
+    var startIdx = sectionDef.dataStart - 1;  // convert to 0-indexed
+    var endIdx   = sectionDef.dataEnd
+                     ? sectionDef.dataEnd - 1   // inclusive end from JSON
+                     : sectionDef.totalRow - 2; // fallback: totalRow - 1 in 0-idx, exclusive
+
+    for (var r = startIdx; r <= endIdx; r++) {
       var raw = allRows[r];
       if (!raw || !raw[1] || String(raw[1]).trim() === '') continue;
       rows.push(parseRowFn(raw));
@@ -123,13 +220,28 @@
     return { rows: rows, grandTotal: grandTotal };
   }
 
-  function parseCollectionReport(workbook) {
+  // -------------------------------------------------------------------
+  // Main entry point
+  //   workbook       — XLSX workbook object
+  //   tableCoords    — (optional) parsed table_coordinates.json object
+  // Returns the same structure as before for dashboard.js compatibility
+  // -------------------------------------------------------------------
+  function parseCollectionReport(workbook, tableCoords) {
+    // Build per-sheet coordinate maps (null if JSON not provided)
+    var perSheetCoords = tableCoords ? buildSectionsFromCoords(tableCoords) : null;
+
+    if (perSheetCoords) {
+      console.log('[excel-parser] Using table_coordinates.json for row mapping');
+    } else {
+      console.log('[excel-parser] Using hardcoded fallback row offsets');
+    }
+
     var result = {
       sheets: {},
       sheetOrder: [],
       sheetConfig: SHEET_CONFIG,
       sectionLabels: SECTION_LABELS,
-      sectionOrder: ['region', 'district', 'branch', 'igl', 'fig', 'il']
+      sectionOrder: SECTION_ORDER
     };
 
     var expectedSheets = Object.keys(SHEET_CONFIG);
@@ -145,11 +257,15 @@
       var allRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
       var parseRowFn = config.type === 'full' ? parseFullRow : parseSimpleRow;
 
+      // Get the section definitions for this specific sheet
+      var sections = getSectionsForSheet(sheetName, perSheetCoords);
+
       var sheetData = {};
-      var sectionKeys = Object.keys(SECTIONS);
-      for (var j = 0; j < sectionKeys.length; j++) {
-        var secKey = sectionKeys[j];
-        sheetData[secKey] = extractSection(allRows, SECTIONS[secKey], parseRowFn);
+      for (var j = 0; j < SECTION_ORDER.length; j++) {
+        var secKey = SECTION_ORDER[j];
+        if (sections[secKey]) {
+          sheetData[secKey] = extractSection(allRows, sections[secKey], parseRowFn);
+        }
       }
 
       result.sheets[sheetName] = {
@@ -167,10 +283,10 @@
     return result;
   }
 
-  // Expose globally
+  // Expose globally (same interface as before)
   window.parseCollectionReport = parseCollectionReport;
   window.REPORT_CONFIG = {
-    SECTIONS: SECTIONS,
+    SECTIONS: FALLBACK_SECTIONS,
     SHEET_CONFIG: SHEET_CONFIG,
     SECTION_LABELS: SECTION_LABELS
   };
