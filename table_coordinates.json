@@ -1,0 +1,816 @@
+{
+  "file_name": "Daily_Collection_Report_as_on_01-02-2026.xlsx",
+  "sheets": {
+    "OverAll": {
+      "description": "Overall Collection Report (cumulative) as on 01-02-2026",
+      "dimensions": "B2:Y229",
+      "column_range": "B:Y",
+      "tables": {
+        "region_wise": {
+          "title_cell": "B2",
+          "title": "REGION - WISE COLLECTION REPORT - as on 01-02-2026 (OverAll)",
+          "full_range": "B2:Y11",
+          "header_rows": {
+            "row_1": { "range": "B3:Y3", "row": 3, "description": "Category headers (REGION NAME, REGULAR DEMAND VS COLLECTION, 1-30 DPD, 31-60 DPD, PNPA, NPA, METRICS)" },
+            "row_2": { "range": "C4:Y4", "row": 4, "description": "Sub-headers (DEMAND, COLLECTION, FTOD, COLLECTION %, BALANCE, RANK, PERFORMANCE)" },
+            "row_3": { "range": "T5:W5", "row": 5, "description": "NPA sub-sub-headers (ACCOUNT, AMOUNT under ACTIVATION & CLOSURE)" }
+          },
+          "data_range": "B6:Y10",
+          "data_start_row": 6,
+          "data_end_row": 10,
+          "data_row_count": 5,
+          "grand_total_row": 11,
+          "grand_total_range": "B11:Y11"
+        },
+        "district_wise": {
+          "title_cell": "B15",
+          "title": "DISTRICT - WISE COLLECTION REPORT - as on 01-02-2026 (OverAll)",
+          "full_range": "B15:Y49",
+          "header_rows": {
+            "row_1": { "range": "B16:Y16", "row": 16, "description": "Category headers" },
+            "row_2": { "range": "C17:Y17", "row": 17, "description": "Sub-headers" },
+            "row_3": { "range": "T18:W18", "row": 18, "description": "NPA sub-sub-headers" }
+          },
+          "data_range": "B19:Y48",
+          "data_start_row": 19,
+          "data_end_row": 48,
+          "data_row_count": 30,
+          "grand_total_row": 49,
+          "grand_total_range": "B49:Y49"
+        },
+        "branch_wise": {
+          "title_cell": "B53",
+          "title": "BRANCH - WISE COLLECTION REPORT - as on 01-02-2026 (OverAll)",
+          "full_range": "B53:Y184",
+          "header_rows": {
+            "row_1": { "range": "B54:Y54", "row": 54, "description": "Category headers" },
+            "row_2": { "range": "C55:Y55", "row": 55, "description": "Sub-headers" },
+            "row_3": { "range": "T56:W56", "row": 56, "description": "NPA sub-sub-headers" }
+          },
+          "data_range": "B57:Y183",
+          "data_start_row": 57,
+          "data_end_row": 183,
+          "data_row_count": 127,
+          "grand_total_row": 184,
+          "grand_total_range": "B184:Y184"
+        },
+        "igl_region_wise": {
+          "section_title_cell": "B188",
+          "section_title": "REGION WISE - IGL REPORT",
+          "title_cell": "B190",
+          "title": "REGION - WISE COLLECTION REPORT - as on 01-02-2026 (OverAll)",
+          "full_range": "B188:Y199",
+          "header_rows": {
+            "row_1": { "range": "B191:Y191", "row": 191, "description": "Category headers" },
+            "row_2": { "range": "C192:Y192", "row": 192, "description": "Sub-headers" },
+            "row_3": { "range": "T193:W193", "row": 193, "description": "NPA sub-sub-headers" }
+          },
+          "data_range": "B194:Y198",
+          "data_start_row": 194,
+          "data_end_row": 198,
+          "data_row_count": 5,
+          "grand_total_row": 199,
+          "grand_total_range": "B199:Y199"
+        },
+        "fig_region_wise": {
+          "section_title_cell": "B203",
+          "section_title": "REGION WISE - FIG REPORT",
+          "title_cell": "B205",
+          "title": "REGION - WISE COLLECTION REPORT - as on 01-02-2026 (OverAll)",
+          "full_range": "B203:Y214",
+          "header_rows": {
+            "row_1": { "range": "B206:Y206", "row": 206, "description": "Category headers" },
+            "row_2": { "range": "C207:Y207", "row": 207, "description": "Sub-headers" },
+            "row_3": { "range": "T208:W208", "row": 208, "description": "NPA sub-sub-headers" }
+          },
+          "data_range": "B209:Y213",
+          "data_start_row": 209,
+          "data_end_row": 213,
+          "data_row_count": 5,
+          "grand_total_row": 214,
+          "grand_total_range": "B214:Y214"
+        },
+        "il_region_wise": {
+          "section_title_cell": "B218",
+          "section_title": "REGION WISE - IL REPORT",
+          "title_cell": "B220",
+          "title": "REGION - WISE COLLECTION REPORT - as on 01-02-2026 (OverAll)",
+          "full_range": "B218:Y229",
+          "header_rows": {
+            "row_1": { "range": "B221:Y221", "row": 221, "description": "Category headers" },
+            "row_2": { "range": "C222:Y222", "row": 222, "description": "Sub-headers" },
+            "row_3": { "range": "T223:W223", "row": 223, "description": "NPA sub-sub-headers" }
+          },
+          "data_range": "B224:Y228",
+          "data_start_row": 224,
+          "data_end_row": 228,
+          "data_row_count": 5,
+          "grand_total_row": 229,
+          "grand_total_range": "B229:Y229"
+        }
+      },
+      "column_structure": {
+        "B": "Name (Region/District/Branch)",
+        "C": "Regular Demand - DEMAND",
+        "D": "Regular Demand - COLLECTION",
+        "E": "Regular Demand - FTOD",
+        "F": "Regular Demand - COLLECTION %",
+        "G": "1-30 DPD - DEMAND",
+        "H": "1-30 DPD - COLLECTION",
+        "I": "1-30 DPD - BALANCE",
+        "J": "1-30 DPD - COLLECTION %",
+        "K": "31-60 DPD - DEMAND",
+        "L": "31-60 DPD - COLLECTION",
+        "M": "31-60 DPD - BALANCE",
+        "N": "31-60 DPD - COLLECTION %",
+        "O": "PNPA - DEMAND",
+        "P": "PNPA - COLLECTION",
+        "Q": "PNPA - BALANCE",
+        "R": "PNPA - COLLECTION %",
+        "S": "NPA - DEMAND",
+        "T": "NPA - ACTIVATION ACCOUNT",
+        "U": "NPA - ACTIVATION AMOUNT",
+        "V": "NPA - CLOSURE ACCOUNT",
+        "W": "NPA - CLOSURE AMOUNT",
+        "X": "METRICS - RANK",
+        "Y": "METRICS - PERFORMANCE"
+      }
+    },
+
+    "OverAll_On-Date": {
+      "description": "Overall On-Date Collection Report as on 01-02-2026 with next-day demand data and NPA account listings",
+      "dimensions": "A1:E17663",
+      "sheet_label_cell": "A1",
+      "sheet_label": "OverAll On-Date Report",
+      "tables": {
+        "region_wise": {
+          "title_cell": "B2",
+          "title": "REGION - WISE COLLECTION REPORT - as on 01-02-2026 (OverAll)",
+          "full_range": "B2:E11",
+          "header_rows": {
+            "row_1": { "range": "B3:E3", "row": 3, "description": "Category headers (REGION NAME, ON DATE Demand Vs Collection)" },
+            "row_2": { "range": "C4:E4", "row": 4, "description": "Sub-headers (DEMAND, COLLECTION, COLLECTION %)" }
+          },
+          "data_range": "B6:E10",
+          "data_start_row": 6,
+          "data_end_row": 10,
+          "data_row_count": 5,
+          "grand_total_row": 11,
+          "grand_total_range": "B11:E11"
+        },
+        "district_wise": {
+          "title_cell": "B15",
+          "title": "DISTRICT - WISE COLLECTION REPORT - as on 01-02-2026 (OverAll)",
+          "full_range": "B15:E49",
+          "header_rows": {
+            "row_1": { "range": "B16:E16", "row": 16, "description": "Category headers" },
+            "row_2": { "range": "C17:E17", "row": 17, "description": "Sub-headers" }
+          },
+          "data_range": "B19:E48",
+          "data_start_row": 19,
+          "data_end_row": 48,
+          "data_row_count": 30,
+          "grand_total_row": 49,
+          "grand_total_range": "B49:E49"
+        },
+        "branch_wise": {
+          "title_cell": "B53",
+          "title": "BRANCH - WISE COLLECTION REPORT - as on 01-02-2026 (OverAll)",
+          "full_range": "B53:E184",
+          "header_rows": {
+            "row_1": { "range": "B54:E54", "row": 54, "description": "Category headers" },
+            "row_2": { "range": "C55:E55", "row": 55, "description": "Sub-headers" }
+          },
+          "data_range": "B57:E183",
+          "data_start_row": 57,
+          "data_end_row": 183,
+          "data_row_count": 127,
+          "grand_total_row": 184,
+          "grand_total_range": "B184:E184"
+        },
+        "igl_region_wise": {
+          "section_title_cell": "B188",
+          "section_title": "REGION WISE - IGL REPORT",
+          "title_cell": "B190",
+          "full_range": "B188:E199",
+          "header_rows": {
+            "row_1": { "range": "B191:E191", "row": 191 },
+            "row_2": { "range": "C192:E192", "row": 192 }
+          },
+          "data_range": "B194:E198",
+          "data_start_row": 194,
+          "data_end_row": 198,
+          "data_row_count": 5,
+          "grand_total_row": 199,
+          "grand_total_range": "B199:E199"
+        },
+        "fig_region_wise": {
+          "section_title_cell": "B203",
+          "section_title": "REGION WISE - FIG REPORT",
+          "title_cell": "B205",
+          "full_range": "B203:E214",
+          "header_rows": {
+            "row_1": { "range": "B206:E206", "row": 206 },
+            "row_2": { "range": "C207:E207", "row": 207 }
+          },
+          "data_range": "B209:E213",
+          "data_start_row": 209,
+          "data_end_row": 213,
+          "data_row_count": 5,
+          "grand_total_row": 214,
+          "grand_total_range": "B214:E214"
+        },
+        "il_region_wise": {
+          "section_title_cell": "B218",
+          "section_title": "REGION WISE - IL REPORT",
+          "title_cell": "B220",
+          "full_range": "B218:E229",
+          "header_rows": {
+            "row_1": { "range": "B221:E221", "row": 221 },
+            "row_2": { "range": "C222:E222", "row": 222 }
+          },
+          "data_range": "B224:E228",
+          "data_start_row": 224,
+          "data_end_row": 228,
+          "data_row_count": 5,
+          "grand_total_row": 229,
+          "grand_total_range": "B229:E229"
+        }
+      },
+      "column_structure_tables": {
+        "B": "Name (Region/District/Branch)",
+        "C": "ON DATE Demand - DEMAND",
+        "D": "ON DATE Demand - COLLECTION",
+        "E": "ON DATE Demand - COLLECTION %"
+      },
+      "auxiliary_data": {
+        "on_date_demand_summary": {
+          "description": "On-date demand total and NPA activation counts",
+          "location": "B988:B994",
+          "fields": {
+            "B988": "ON DATE DEMAND label",
+            "B989": "Value 1 (831)",
+            "B990": "Value 2 (4702)",
+            "B991": "Value 3 (4379)",
+            "B992": "Value 4 (148)",
+            "B993": "Value 5 (6616)",
+            "B994": "Value 6 (16676)"
+          }
+        },
+        "npa_account_data": {
+          "description": "NPA account IDs and regular demand amounts for next day processing",
+          "header_row": 987,
+          "header_range": "C987:D987",
+          "headers": { "C": "ACCOUNT_ID_NEXT_DAY", "D": "REGULAR_DEMAND" },
+          "data_range": "C988:D17663",
+          "data_start_row": 988,
+          "data_end_row": 17663,
+          "note": "Account IDs (15-digit numbers) in column C, demand amounts in column D"
+        },
+        "next_day_tables": {
+          "region_next_day": {
+            "marker_cell": "A1000",
+            "marker": "REGION_NEXT_DAY",
+            "header_row": 1001,
+            "data_range": "A1002:A1006",
+            "grand_total_row": 1007,
+            "note": "Region names in column A; overlaps with NPA account data in C:D"
+          },
+          "district_next_day": {
+            "marker_cell": "A1100",
+            "marker": "DISTRICT_NEXT_DAY",
+            "header_row": 1101,
+            "data_range": "A1102:A1131",
+            "data_row_count": 30,
+            "grand_total_row": 1132
+          },
+          "branch_next_day": {
+            "marker_cell": "A1200",
+            "marker": "BRANCH_NEXT_DAY",
+            "header_row": 1201,
+            "data_range": "A1202:A1323",
+            "data_row_count": 122,
+            "grand_total_row": 1324
+          },
+          "igl_next_day": {
+            "marker_cell": "A1400",
+            "marker": "IGL_NEXT_DAY",
+            "header_row": 1401,
+            "data_range": "A1402:A1406",
+            "grand_total_row": 1407
+          },
+          "fig_next_day": {
+            "marker_cell": "A1500",
+            "marker": "FIG_NEXT_DAY",
+            "header_row": 1501,
+            "data_range": "A1502:A1505",
+            "grand_total_row": 1506
+          },
+          "il_next_day": {
+            "marker_cell": "A1600",
+            "marker": "IL_NEXT_DAY",
+            "header_row": 1601,
+            "data_range": "A1602:A1604",
+            "grand_total_row": 1605
+          }
+        }
+      }
+    },
+
+    "tom_OverAll_On-Date": {
+      "description": "Tomorrow On-Date Demand Report (02-02-2026) - Overall",
+      "dimensions": "A1:E229",
+      "sheet_label_cell": "A1",
+      "sheet_label": "Tomorrow On-Date Demand Report (02-02-2026)",
+      "column_range": "B:E",
+      "tables": {
+        "region_wise": {
+          "title_cell": "B2",
+          "title": "REGION - WISE COLLECTION REPORT - as on 02-02-2026 (OverAll)",
+          "full_range": "B2:E11",
+          "header_rows": {
+            "row_1": { "range": "B3:E3", "row": 3 },
+            "row_2": { "range": "C4:E4", "row": 4 }
+          },
+          "data_range": "B6:E10",
+          "data_start_row": 6,
+          "data_end_row": 10,
+          "data_row_count": 5,
+          "grand_total_row": 11,
+          "grand_total_range": "B11:E11"
+        },
+        "district_wise": {
+          "title_cell": "B15",
+          "title": "DISTRICT - WISE COLLECTION REPORT - as on 02-02-2026 (OverAll)",
+          "full_range": "B15:E49",
+          "header_rows": {
+            "row_1": { "range": "B16:E16", "row": 16 },
+            "row_2": { "range": "C17:E17", "row": 17 }
+          },
+          "data_range": "B19:E48",
+          "data_start_row": 19,
+          "data_end_row": 48,
+          "data_row_count": 30,
+          "grand_total_row": 49,
+          "grand_total_range": "B49:E49"
+        },
+        "branch_wise": {
+          "title_cell": "B53",
+          "title": "BRANCH - WISE COLLECTION REPORT - as on 02-02-2026 (OverAll)",
+          "full_range": "B53:E184",
+          "header_rows": {
+            "row_1": { "range": "B54:E54", "row": 54 },
+            "row_2": { "range": "C55:E55", "row": 55 }
+          },
+          "data_range": "B57:E183",
+          "data_start_row": 57,
+          "data_end_row": 183,
+          "data_row_count": 127,
+          "grand_total_row": 184,
+          "grand_total_range": "B184:E184"
+        },
+        "igl_region_wise": {
+          "section_title_cell": "B188",
+          "section_title": "REGION WISE - IGL REPORT",
+          "title_cell": "B190",
+          "full_range": "B188:E199",
+          "header_rows": {
+            "row_1": { "range": "B191:E191", "row": 191 },
+            "row_2": { "range": "C192:E192", "row": 192 }
+          },
+          "data_range": "B194:E198",
+          "data_start_row": 194,
+          "data_end_row": 198,
+          "data_row_count": 5,
+          "grand_total_row": 199,
+          "grand_total_range": "B199:E199"
+        },
+        "fig_region_wise": {
+          "section_title_cell": "B203",
+          "section_title": "REGION WISE - FIG REPORT",
+          "title_cell": "B205",
+          "full_range": "B203:E214",
+          "header_rows": {
+            "row_1": { "range": "B206:E206", "row": 206 },
+            "row_2": { "range": "C207:E207", "row": 207 }
+          },
+          "data_range": "B209:E213",
+          "data_start_row": 209,
+          "data_end_row": 213,
+          "data_row_count": 5,
+          "grand_total_row": 214,
+          "grand_total_range": "B214:E214"
+        },
+        "il_region_wise": {
+          "section_title_cell": "B218",
+          "section_title": "REGION WISE - IL REPORT",
+          "title_cell": "B220",
+          "full_range": "B218:E229",
+          "header_rows": {
+            "row_1": { "range": "B221:E221", "row": 221 },
+            "row_2": { "range": "C222:E222", "row": 222 }
+          },
+          "data_range": "B224:E228",
+          "data_start_row": 224,
+          "data_end_row": 228,
+          "data_row_count": 5,
+          "grand_total_row": 229,
+          "grand_total_range": "B229:E229"
+        }
+      },
+      "column_structure": {
+        "B": "Name (Region/District/Branch)",
+        "C": "ON DATE Demand - DEMAND",
+        "D": "ON DATE Demand - COLLECTION",
+        "E": "ON DATE Demand - COLLECTION %"
+      }
+    },
+
+    "FY_25-26": {
+      "description": "Financial Year 2025-26 Collection Report as on 01-02-2026",
+      "dimensions": "B2:Y229",
+      "column_range": "B:Y",
+      "tables": {
+        "region_wise": {
+          "title_cell": "B2",
+          "title": "REGION - WISE COLLECTION REPORT - as on 01-02-2026 (FY_25-26)",
+          "full_range": "B2:Y11",
+          "header_rows": {
+            "row_1": { "range": "B3:Y3", "row": 3 },
+            "row_2": { "range": "C4:Y4", "row": 4 },
+            "row_3": { "range": "T5:W5", "row": 5 }
+          },
+          "data_range": "B6:Y10",
+          "data_start_row": 6,
+          "data_end_row": 10,
+          "data_row_count": 5,
+          "grand_total_row": 11,
+          "grand_total_range": "B11:Y11"
+        },
+        "district_wise": {
+          "title_cell": "B15",
+          "title": "DISTRICT - WISE COLLECTION REPORT - as on 01-02-2026 (FY_25-26)",
+          "full_range": "B15:Y49",
+          "header_rows": {
+            "row_1": { "range": "B16:Y16", "row": 16 },
+            "row_2": { "range": "C17:Y17", "row": 17 },
+            "row_3": { "range": "T18:W18", "row": 18 }
+          },
+          "data_range": "B19:Y48",
+          "data_start_row": 19,
+          "data_end_row": 48,
+          "data_row_count": 30,
+          "grand_total_row": 49,
+          "grand_total_range": "B49:Y49"
+        },
+        "branch_wise": {
+          "title_cell": "B53",
+          "title": "BRANCH - WISE COLLECTION REPORT - as on 01-02-2026 (FY_25-26)",
+          "full_range": "B53:Y184",
+          "header_rows": {
+            "row_1": { "range": "B54:Y54", "row": 54 },
+            "row_2": { "range": "C55:Y55", "row": 55 },
+            "row_3": { "range": "T56:W56", "row": 56 }
+          },
+          "data_range": "B57:Y183",
+          "data_start_row": 57,
+          "data_end_row": 183,
+          "data_row_count": 127,
+          "grand_total_row": 184,
+          "grand_total_range": "B184:Y184"
+        },
+        "igl_region_wise": {
+          "section_title_cell": "B188",
+          "section_title": "REGION WISE - IGL REPORT",
+          "title_cell": "B190",
+          "title": "REGION - WISE COLLECTION REPORT - as on 01-02-2026 (FY_25-26)",
+          "full_range": "B188:Y199",
+          "header_rows": {
+            "row_1": { "range": "B191:Y191", "row": 191 },
+            "row_2": { "range": "C192:Y192", "row": 192 },
+            "row_3": { "range": "T193:W193", "row": 193 }
+          },
+          "data_range": "B194:Y198",
+          "data_start_row": 194,
+          "data_end_row": 198,
+          "data_row_count": 5,
+          "grand_total_row": 199,
+          "grand_total_range": "B199:Y199"
+        },
+        "fig_region_wise": {
+          "section_title_cell": "B203",
+          "section_title": "REGION WISE - FIG REPORT",
+          "title_cell": "B205",
+          "title": "REGION - WISE COLLECTION REPORT - as on 01-02-2026 (FY_25-26)",
+          "full_range": "B203:Y214",
+          "header_rows": {
+            "row_1": { "range": "B206:Y206", "row": 206 },
+            "row_2": { "range": "C207:Y207", "row": 207 },
+            "row_3": { "range": "T208:W208", "row": 208 }
+          },
+          "data_range": "B209:Y213",
+          "data_start_row": 209,
+          "data_end_row": 213,
+          "data_row_count": 5,
+          "grand_total_row": 214,
+          "grand_total_range": "B214:Y214"
+        },
+        "il_region_wise": {
+          "section_title_cell": "B218",
+          "section_title": "REGION WISE - IL REPORT",
+          "title_cell": "B220",
+          "title": "REGION - WISE COLLECTION REPORT - as on 01-02-2026 (FY_25-26)",
+          "full_range": "B218:Y229",
+          "header_rows": {
+            "row_1": { "range": "B221:Y221", "row": 221 },
+            "row_2": { "range": "C222:Y222", "row": 222 },
+            "row_3": { "range": "T223:W223", "row": 223 }
+          },
+          "data_range": "B224:Y228",
+          "data_start_row": 224,
+          "data_end_row": 228,
+          "data_row_count": 5,
+          "grand_total_row": 229,
+          "grand_total_range": "B229:Y229"
+        }
+      },
+      "column_structure": {
+        "B": "Name (Region/District/Branch)",
+        "C": "Regular Demand - DEMAND",
+        "D": "Regular Demand - COLLECTION",
+        "E": "Regular Demand - FTOD",
+        "F": "Regular Demand - COLLECTION %",
+        "G": "1-30 DPD - DEMAND",
+        "H": "1-30 DPD - COLLECTION",
+        "I": "1-30 DPD - BALANCE",
+        "J": "1-30 DPD - COLLECTION %",
+        "K": "31-60 DPD - DEMAND",
+        "L": "31-60 DPD - COLLECTION",
+        "M": "31-60 DPD - BALANCE",
+        "N": "31-60 DPD - COLLECTION %",
+        "O": "PNPA - DEMAND",
+        "P": "PNPA - COLLECTION",
+        "Q": "PNPA - BALANCE",
+        "R": "PNPA - COLLECTION %",
+        "S": "NPA - DEMAND",
+        "T": "NPA - ACTIVATION ACCOUNT",
+        "U": "NPA - ACTIVATION AMOUNT",
+        "V": "NPA - CLOSURE ACCOUNT",
+        "W": "NPA - CLOSURE AMOUNT",
+        "X": "METRICS - RANK",
+        "Y": "METRICS - PERFORMANCE"
+      }
+    },
+
+    "FY_25-26_On-Date": {
+      "description": "FY 2025-26 On-Date Collection Report as on 01-02-2026",
+      "dimensions": "A1:E229",
+      "sheet_label_cell": "A1",
+      "sheet_label": "FY OverAll On-Date Report",
+      "column_range": "B:E",
+      "tables": {
+        "region_wise": {
+          "title_cell": "B2",
+          "title": "REGION - WISE COLLECTION REPORT - as on 01-02-2026 (FY_25-26)",
+          "full_range": "B2:E11",
+          "header_rows": {
+            "row_1": { "range": "B3:E3", "row": 3 },
+            "row_2": { "range": "C4:E4", "row": 4 }
+          },
+          "data_range": "B6:E10",
+          "data_start_row": 6,
+          "data_end_row": 10,
+          "data_row_count": 5,
+          "grand_total_row": 11,
+          "grand_total_range": "B11:E11"
+        },
+        "district_wise": {
+          "title_cell": "B15",
+          "title": "DISTRICT - WISE COLLECTION REPORT - as on 01-02-2026 (FY_25-26)",
+          "full_range": "B15:E49",
+          "header_rows": {
+            "row_1": { "range": "B16:E16", "row": 16 },
+            "row_2": { "range": "C17:E17", "row": 17 }
+          },
+          "data_range": "B19:E48",
+          "data_start_row": 19,
+          "data_end_row": 48,
+          "data_row_count": 30,
+          "grand_total_row": 49,
+          "grand_total_range": "B49:E49"
+        },
+        "branch_wise": {
+          "title_cell": "B53",
+          "title": "BRANCH - WISE COLLECTION REPORT - as on 01-02-2026 (FY_25-26)",
+          "full_range": "B53:E184",
+          "header_rows": {
+            "row_1": { "range": "B54:E54", "row": 54 },
+            "row_2": { "range": "C55:E55", "row": 55 }
+          },
+          "data_range": "B57:E183",
+          "data_start_row": 57,
+          "data_end_row": 183,
+          "data_row_count": 127,
+          "grand_total_row": 184,
+          "grand_total_range": "B184:E184"
+        },
+        "igl_region_wise": {
+          "section_title_cell": "B188",
+          "section_title": "REGION WISE - IGL REPORT",
+          "title_cell": "B190",
+          "full_range": "B188:E199",
+          "header_rows": {
+            "row_1": { "range": "B191:E191", "row": 191 },
+            "row_2": { "range": "C192:E192", "row": 192 }
+          },
+          "data_range": "B194:E198",
+          "data_start_row": 194,
+          "data_end_row": 198,
+          "data_row_count": 5,
+          "grand_total_row": 199,
+          "grand_total_range": "B199:E199"
+        },
+        "fig_region_wise": {
+          "section_title_cell": "B203",
+          "section_title": "REGION WISE - FIG REPORT",
+          "title_cell": "B205",
+          "full_range": "B203:E214",
+          "header_rows": {
+            "row_1": { "range": "B206:E206", "row": 206 },
+            "row_2": { "range": "C207:E207", "row": 207 }
+          },
+          "data_range": "B209:E213",
+          "data_start_row": 209,
+          "data_end_row": 213,
+          "data_row_count": 5,
+          "grand_total_row": 214,
+          "grand_total_range": "B214:E214"
+        },
+        "il_region_wise": {
+          "section_title_cell": "B218",
+          "section_title": "REGION WISE - IL REPORT",
+          "title_cell": "B220",
+          "full_range": "B218:E229",
+          "header_rows": {
+            "row_1": { "range": "B221:E221", "row": 221 },
+            "row_2": { "range": "C222:E222", "row": 222 }
+          },
+          "data_range": "B224:E228",
+          "data_start_row": 224,
+          "data_end_row": 228,
+          "data_row_count": 5,
+          "grand_total_row": 229,
+          "grand_total_range": "B229:E229"
+        }
+      },
+      "column_structure": {
+        "B": "Name (Region/District/Branch)",
+        "C": "ON DATE Demand - DEMAND",
+        "D": "ON DATE Demand - COLLECTION",
+        "E": "ON DATE Demand - COLLECTION %"
+      }
+    },
+
+    "tom_FY_25-26_On-Date": {
+      "description": "FY 2025-26 Tomorrow On-Date Demand Report (02-02-2026)",
+      "dimensions": "A1:E229",
+      "sheet_label_cell": "A1",
+      "sheet_label": "FY Tomorrow On-Date Demand Report (02-02-2026)",
+      "column_range": "B:E",
+      "tables": {
+        "region_wise": {
+          "title_cell": "B2",
+          "title": "REGION - WISE COLLECTION REPORT - as on 02-02-2026 (FY_25-26)",
+          "full_range": "B2:E11",
+          "header_rows": {
+            "row_1": { "range": "B3:E3", "row": 3 },
+            "row_2": { "range": "C4:E4", "row": 4 }
+          },
+          "data_range": "B6:E10",
+          "data_start_row": 6,
+          "data_end_row": 10,
+          "data_row_count": 5,
+          "grand_total_row": 11,
+          "grand_total_range": "B11:E11"
+        },
+        "district_wise": {
+          "title_cell": "B15",
+          "title": "DISTRICT - WISE COLLECTION REPORT - as on 02-02-2026 (FY_25-26)",
+          "full_range": "B15:E49",
+          "header_rows": {
+            "row_1": { "range": "B16:E16", "row": 16 },
+            "row_2": { "range": "C17:E17", "row": 17 }
+          },
+          "data_range": "B19:E48",
+          "data_start_row": 19,
+          "data_end_row": 48,
+          "data_row_count": 30,
+          "grand_total_row": 49,
+          "grand_total_range": "B49:E49"
+        },
+        "branch_wise": {
+          "title_cell": "B53",
+          "title": "BRANCH - WISE COLLECTION REPORT - as on 02-02-2026 (FY_25-26)",
+          "full_range": "B53:E184",
+          "header_rows": {
+            "row_1": { "range": "B54:E54", "row": 54 },
+            "row_2": { "range": "C55:E55", "row": 55 }
+          },
+          "data_range": "B57:E183",
+          "data_start_row": 57,
+          "data_end_row": 183,
+          "data_row_count": 127,
+          "grand_total_row": 184,
+          "grand_total_range": "B184:E184"
+        },
+        "igl_region_wise": {
+          "section_title_cell": "B188",
+          "section_title": "REGION WISE - IGL REPORT",
+          "title_cell": "B190",
+          "full_range": "B188:E199",
+          "header_rows": {
+            "row_1": { "range": "B191:E191", "row": 191 },
+            "row_2": { "range": "C192:E192", "row": 192 }
+          },
+          "data_range": "B194:E198",
+          "data_start_row": 194,
+          "data_end_row": 198,
+          "data_row_count": 5,
+          "grand_total_row": 199,
+          "grand_total_range": "B199:E199"
+        },
+        "fig_region_wise": {
+          "section_title_cell": "B203",
+          "section_title": "REGION WISE - FIG REPORT",
+          "title_cell": "B205",
+          "full_range": "B203:E214",
+          "header_rows": {
+            "row_1": { "range": "B206:E206", "row": 206 },
+            "row_2": { "range": "C207:E207", "row": 207 }
+          },
+          "data_range": "B209:E213",
+          "data_start_row": 209,
+          "data_end_row": 213,
+          "data_row_count": 5,
+          "grand_total_row": 214,
+          "grand_total_range": "B214:E214"
+        },
+        "il_region_wise": {
+          "section_title_cell": "B218",
+          "section_title": "REGION WISE - IL REPORT",
+          "title_cell": "B220",
+          "full_range": "B218:E229",
+          "header_rows": {
+            "row_1": { "range": "B221:E221", "row": 221 },
+            "row_2": { "range": "C222:E222", "row": 222 }
+          },
+          "data_range": "B224:E228",
+          "data_start_row": 224,
+          "data_end_row": 228,
+          "data_row_count": 5,
+          "grand_total_row": 229,
+          "grand_total_range": "B229:E229"
+        }
+      },
+      "column_structure": {
+        "B": "Name (Region/District/Branch)",
+        "C": "ON DATE Demand - DEMAND",
+        "D": "ON DATE Demand - COLLECTION",
+        "E": "ON DATE Demand - COLLECTION %"
+      }
+    }
+  },
+
+  "summary": {
+    "total_sheets": 6,
+    "sheet_names": ["OverAll", "OverAll_On-Date", "tom_OverAll_On-Date", "FY_25-26", "FY_25-26_On-Date", "tom_FY_25-26_On-Date"],
+    "tables_per_sheet": 6,
+    "total_tables": 36,
+    "table_types": ["region_wise", "district_wise", "branch_wise", "igl_region_wise", "fig_region_wise", "il_region_wise"],
+    "common_table_row_layout": {
+      "region_wise": { "title_row": 2, "header_start": 3, "data_start": 6, "data_end": 10, "grand_total": 11 },
+      "district_wise": { "title_row": 15, "header_start": 16, "data_start": 19, "data_end": 48, "grand_total": 49 },
+      "branch_wise": { "title_row": 53, "header_start": 54, "data_start": 57, "data_end": 183, "grand_total": 184 },
+      "igl_region_wise": { "section_title_row": 188, "title_row": 190, "header_start": 191, "data_start": 194, "data_end": 198, "grand_total": 199 },
+      "fig_region_wise": { "section_title_row": 203, "title_row": 205, "header_start": 206, "data_start": 209, "data_end": 213, "grand_total": 214 },
+      "il_region_wise": { "section_title_row": 218, "title_row": 220, "header_start": 221, "data_start": 224, "data_end": 228, "grand_total": 229 }
+    },
+    "sheet_types": {
+      "full_report": {
+        "sheets": ["OverAll", "FY_25-26"],
+        "columns": "B:Y (24 columns)",
+        "includes": "Regular Demand, 1-30 DPD, 31-60 DPD, PNPA, NPA, Metrics"
+      },
+      "on_date_report": {
+        "sheets": ["OverAll_On-Date", "FY_25-26_On-Date"],
+        "columns": "B:E (4 columns)",
+        "includes": "On-Date Demand, Collection, Collection %"
+      },
+      "tomorrow_report": {
+        "sheets": ["tom_OverAll_On-Date", "tom_FY_25-26_On-Date"],
+        "columns": "B:E (4 columns)",
+        "includes": "Next-day Demand, Collection, Collection %"
+      }
+    }
+  }
+}
