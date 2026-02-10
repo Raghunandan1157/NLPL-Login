@@ -254,7 +254,11 @@
       foundAny = true;
       var config = SHEET_CONFIG[sheetName];
       var worksheet = workbook.Sheets[sheetName];
-      var allRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+      // Force range from A1 to include empty column A, keeping column indices aligned
+      // Without this, SheetJS drops empty leading columns/rows, shifting all indices
+      var sheetRange = config.type === 'full' ? 'A1:Y229' : 'A1:E229';
+      // For OverAll_On-Date (17663 rows), use the standard range — aux data is beyond row 229
+      var allRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '', range: sheetRange });
       var parseRowFn = config.type === 'full' ? parseFullRow : parseSimpleRow;
 
       // Get the section definitions for this specific sheet
